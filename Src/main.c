@@ -9,7 +9,7 @@
   * inserted by the user or by software development tools
   * are owned by their respective copyright owners.
   *
-  * COPYRIGHT(c) 2017 STMicroelectronics
+  * COPYRIGHT(c) 2018 STMicroelectronics
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -46,6 +46,7 @@
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
 #include "PuttyInterface/PuttyInterface.h"
+#include "myNRF24.h"
 
 /* USER CODE END Includes */
 
@@ -106,12 +107,17 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
 
+  //setup code for using the nRF24 module
+  initRobo(&hspi2, RADIO_CHANNEL, ReadAddress());
+  dataPacket dataStruct;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   char * startmessage = "---------------------\n\r";
   uprintf(startmessage);
+  uprintf("Build: %s %s\n", __DATE__, __TIME__);
   HAL_UART_Receive_IT(&huart1, rec_buf, 1);
 
   int tick = 0;
@@ -121,8 +127,11 @@ int main(void)
   {
 	  if(HAL_GetTick() == tick + 200){
 		  tick = HAL_GetTick();
-		  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
-		  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED2_Pin);
+
+		  //blinky-blinky with LEDs
+
+		  //HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
+		  //HAL_GPIO_TogglePin(LED1_GPIO_Port, LED2_Pin);
 	  }
 
 	  if(huart2_Rx_flag){
@@ -131,6 +140,53 @@ int main(void)
 		  HandlePcInput(&small_buf, 1, HandleCommand);
 		  HAL_UART_Receive_IT(&huart1, rec_buf, 1);
 	  }
+
+
+	  /* BEGIN nRF24 polling */
+	  //The code below was copied from the git "main_microcontroller" before it was modified to fit
+
+	  if(irqRead(&hspi2)){
+		  //HAL_GPIO_WritePin(enable_GPIO_Port, enable_Pin, 1); //maybe the CE pin? we don't use that anymore. It's always high now.
+		  //stopCnt = 0;
+		  roboCallback(&hspi2, &dataStruct);
+		  if(dataStruct.robotID == ReadAddress()){
+			  //blink
+			  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
+			  HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
+			  //calcMotorSpeed(&dataStruct, &wheely, prevWheelCommand);
+			  //dribbler
+			  //dribbler.Pulse=125*dataStruct.driblerSpeed;
+
+			  //if (HAL_TIM_PWM_ConfigChannel(&htim2, &dribbler, TIM_CHANNEL_2) != HAL_OK){
+			  //	  Error_Handler();
+			  //}
+
+			  //HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_2);
+
+			  //kicker
+			  /*
+			  if (dataStruct.kickForce != 0){
+				  if(kickPrevCnt >= 999){
+					  kickPrevCnt = 0;
+					  shoot(dataStruct.kickForce, dataStruct.chipper, address);
+					  dataStruct.kickForce = 0;
+				  }
+			  }
+			  */
+
+
+			  //TODO: I think it would be nice to print some debug info to UART with some packet content
+		  }
+
+	  }
+
+
+	  //This line suggest that there was a second nRF24 module on SPI3 with an earlier board design. I'm not sure about that.
+	  //sendReceivePacket(&hspi3, &wheely, &backWheely);
+
+	  /* END nRF24 polling */
+
+
 
   /* USER CODE END WHILE */
 
@@ -201,6 +257,14 @@ void HandleCommand(char * input){
 		uprintf("started\n\r");
 	}else if(!strcmp(input, "address")){
 		uprintf("Address = [%d]\n\r", ReadAddress());
+	}else if(!strcmp(input, "help")) {
+		uprintf("----HELP----\n");
+		uprintf("Build: %s %s\n", __DATE__, __TIME__);
+		uprintf("List of available commands: \n");
+		uprintf("help -- Prints this help message\n");
+		uprintf("start -- Not implemented\n");
+		uprintf("address -- Prints the address as read from the DIP switches on the board.\n");
+		uprintf("(this list may be incomplete)\n");
 	}
 }
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){

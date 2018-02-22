@@ -9,7 +9,7 @@
   * inserted by the user or by software development tools
   * are owned by their respective copyright owners.
   *
-  * COPYRIGHT(c) 2017 STMicroelectronics
+  * COPYRIGHT(c) 2018 STMicroelectronics
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -72,6 +72,11 @@
 #define USB_UART_RX_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
+
+//The radio channel for the nRF24 wireless module as agreed on with the organizational team / initiatiors of the RoboCup.
+//A team in the RoboCup should select one channel and inform "the RoboCup" about the used frequencies (channels) to avoid
+//any distrubance with other teams (e.g. opponents).
+#define RADIO_CHANNEL 78
 
 /* USER CODE END Private defines */
 
