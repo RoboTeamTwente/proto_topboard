@@ -3,6 +3,8 @@
  *
  *  Created on: 19 sep. 2016
  *      Author: Hans-van-der-Heide
+ *
+ *  Edited by: Ulf Stottmeister in February 2017
  */
 
 
@@ -10,38 +12,6 @@
 
 #include <myNRF24.h>
 #include <string.h>
-
-//*************************auxillery functions**********************************//
-//*******************not actually for NRF24 control*****************************//
-
-//blink leds for debugging purposes
-/*void fun(){
-	  //HAL_GPIO_WritePin(GPIOE, LD3_Pin, GPIO_PIN_RESET);
-	  HAL_GPIO_WritePin(GPIOE, LD4_Pin, GPIO_PIN_SET);
-	  HAL_Delay(100);
-	  HAL_GPIO_WritePin(GPIOE, LD4_Pin, GPIO_PIN_RESET);
-	//  HAL_GPIO_WritePin(GPIOE, LD6_Pin, GPIO_PIN_SET);
-	  HAL_Delay(100);
-	 // HAL_GPIO_WritePin(GPIOE, LD6_Pin, GPIO_PIN_RESET);
-	  HAL_GPIO_WritePin(GPIOE, LD8_Pin, GPIO_PIN_SET);
-	  HAL_Delay(100);
-	  HAL_GPIO_WritePin(GPIOE, LD8_Pin, GPIO_PIN_RESET);
-	 // HAL_GPIO_WritePin(GPIOE, LD10_Pin, GPIO_PIN_SET);
-	  HAL_Delay(100);
-	 // HAL_GPIO_WritePin(GPIOE, LD10_Pin, GPIO_PIN_RESET);
-	  HAL_GPIO_WritePin(GPIOE, LD9_Pin, GPIO_PIN_SET);
-	  HAL_Delay(100);
-	  HAL_GPIO_WritePin(GPIOE, LD9_Pin, GPIO_PIN_RESET);
-	 // HAL_GPIO_WritePin(GPIOE, LD7_Pin, GPIO_PIN_SET);
-	  HAL_Delay(100);
-	 // HAL_GPIO_WritePin(GPIOE, LD7_Pin, GPIO_PIN_RESET);
-	  HAL_GPIO_WritePin(GPIOE, LD5_Pin, GPIO_PIN_SET);
-	  HAL_Delay(100);
-	  HAL_GPIO_WritePin(GPIOE, LD5_Pin, GPIO_PIN_RESET);
-	 // HAL_GPIO_WritePin(GPIOE, LD3_Pin, GPIO_PIN_SET);
-	  HAL_Delay(100);
-}*/
-
 
 
 //set a specific bit in a byte to a 1 or a 0
@@ -62,6 +32,11 @@ uint8_t setBit(uint8_t byte, uint8_t position, uint8_t value){
 	}
 
 	return result;
+
+	//Consider the following code:
+	//return value?byte|(1<<position):byte&~(1<<position);
+	//This line of code should do the same as this whole function.
+	//I will not implement it yet, though, since the code is "tested but ugly" while my one-liner is untested.
 }
 
 //check if a specific bit in a byte is 1
@@ -75,6 +50,9 @@ uint8_t readBit(uint8_t byte, uint8_t position){
 	else{
 		return 1;
 	}
+
+	//this whole function can be replaced with:
+	//return (byte & (1<<position);
 }
 
 //*****************************low level library********************************//
@@ -83,27 +61,26 @@ uint8_t readBit(uint8_t byte, uint8_t position){
 //put the nss pin corresponding to the SPI used high
 void nssHigh(SPI_HandleTypeDef* spiHandle){
 
-	//In this board revision, this pin is directly connected to Vdd ("high").
-	//HAL_GPIO_WritePin(SPI2_CS_GPIO_Port, SPI2_CS_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
 
 }
 
 //put the nss pin corresponding to the SPI used low
 void nssLow(SPI_HandleTypeDef* spiHandle){
-	//In this board revision, this pin is directly connected to Vdd ("high").
-	//HAL_GPIO_WritePin(SPI2_CS_GPIO_Port, SPI2_CS_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET);
 }
 
 //put the ce pin corresponding to the SPI used high
 void ceHigh(SPI_HandleTypeDef* spiHandle){
 
+	//In this board revision, this pin is directly connected to Vdd ("high").
 	//HAL_GPIO_WritePin(GPIOD, CE_SPI3_Pin, GPIO_PIN_SET);
 
 }
 
 //put the ce pin corresponding to the SPI used low
 void ceLow(SPI_HandleTypeDef* spiHandle){
-
+	//In this board revision, this pin is directly connected to Vdd ("high").
 	//HAL_GPIO_WritePin(GPIOD, CE_SPI3_Pin, GPIO_PIN_RESET);
 }
 

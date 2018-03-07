@@ -108,7 +108,10 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   //setup code for using the nRF24 module
-  initRobo(&hspi2, RADIO_CHANNEL, ReadAddress());
+  uint8_t addressOffset = ReadAddress(); //usually that should be the RobotID
+  nssHigh(&hspi2); //I think we need that, but I can't really say, yet, why we would need to call low-level functions in main()
+
+  initRobo(&hspi2, RADIO_CHANNEL, addressOffset);
   dataPacket dataStruct;
 
   /* USER CODE END 2 */
@@ -120,70 +123,37 @@ int main(void)
   uprintf("Build: %s %s\n", __DATE__, __TIME__);
   HAL_UART_Receive_IT(&huart1, rec_buf, 1);
 
-  int tick = 0;
-  HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1);
-  HAL_GPIO_WritePin(LED1_GPIO_Port, LED3_Pin, 1);
+  //int tick = 0;
+  HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
+  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, 1);
+  //HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, 0);
+//  HAL_GPIO_WritePin(LED4_GPIO_Port, LED4_Pin, 0);
+
   while (1)
   {
-	  if(HAL_GetTick() == tick + 200){
-		  tick = HAL_GetTick();
-
-		  //blinky-blinky with LEDs
-
-		  //HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
-		  //HAL_GPIO_TogglePin(LED1_GPIO_Port, LED2_Pin);
-	  }
-
+	  //HAL_Delay(10); //10ms delay
 	  if(huart2_Rx_flag){
+		  //handle debug input/output over UART (connect an ST-Link to it for easy debugging over USB)
 		  huart2_Rx_flag = false;
 		  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED3_Pin);
 		  HandlePcInput(&small_buf, 1, HandleCommand);
 		  HAL_UART_Receive_IT(&huart1, rec_buf, 1);
+		  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED3_Pin);
 	  }
 
-
-	  /* BEGIN nRF24 polling */
-	  //The code below was copied from the git "main_microcontroller" before it was modified to fit
-
 	  if(irqRead(&hspi2)){
-		  //HAL_GPIO_WritePin(enable_GPIO_Port, enable_Pin, 1); //maybe the CE pin? we don't use that anymore. It's always high now.
-		  //stopCnt = 0;
+		  uprintf("Received something..\n");
 		  roboCallback(&hspi2, &dataStruct);
 		  if(dataStruct.robotID == ReadAddress()){
+			  uprintf("It's for me!\n");
 			  //blink
 			  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
 			  HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
-			  //calcMotorSpeed(&dataStruct, &wheely, prevWheelCommand);
-			  //dribbler
-			  //dribbler.Pulse=125*dataStruct.driblerSpeed;
 
-			  //if (HAL_TIM_PWM_ConfigChannel(&htim2, &dribbler, TIM_CHANNEL_2) != HAL_OK){
-			  //	  Error_Handler();
-			  //}
-
-			  //HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_2);
-
-			  //kicker
-			  /*
-			  if (dataStruct.kickForce != 0){
-				  if(kickPrevCnt >= 999){
-					  kickPrevCnt = 0;
-					  shoot(dataStruct.kickForce, dataStruct.chipper, address);
-					  dataStruct.kickForce = 0;
-				  }
-			  }
-			  */
-
-
-			  //TODO: I think it would be nice to print some debug info to UART with some packet content
 		  }
-
+		  //HAL_Delay(10);
+		  //flushRX(&hspi2);
 	  }
-
-
-	  //This line suggest that there was a second nRF24 module on SPI3 with an earlier board design. I'm not sure about that.
-	  //sendReceivePacket(&hspi3, &wheely, &backWheely);
-
 	  /* END nRF24 polling */
 
 
@@ -257,13 +227,21 @@ void HandleCommand(char * input){
 		uprintf("started\n\r");
 	}else if(!strcmp(input, "address")){
 		uprintf("Address = [%d]\n\r", ReadAddress());
+	}else if(!strcmp(input, "reg")) {
+		uprintf("You are trying to read registers.\n");
+		uprintf("This feature is under construction.\n");
+		uint8_t registerOutput = readReg(&hspi2, 0x0A); //0x0A = RX_ADDR_P0 -- Receiving Address, Data Pipe 0.
+		uprintf("RX_ADDR_P0: 0x%x\n", registerOutput);
+		uprintf("This output will be more explanatory in the future.\n");
 	}else if(!strcmp(input, "help")) {
 		uprintf("----HELP----\n");
 		uprintf("Build: %s %s\n", __DATE__, __TIME__);
+		uprintf("Hardware Version: 2017 Rev. A\n");
 		uprintf("List of available commands: \n");
 		uprintf("help -- Prints this help message\n");
 		uprintf("start -- Not implemented\n");
 		uprintf("address -- Prints the address as read from the DIP switches on the board.\n");
+		uprintf("reg -- Print the values of some registers. Call without Parameters.\n");
 		uprintf("(this list may be incomplete)\n");
 	}
 }
@@ -288,9 +266,11 @@ void _Error_Handler(char * file, int line)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-  while(1) 
-  {
-  }
+	uprintf("ERROR in file %s in line %i\n", file, line);
+	uprintf("Stopping execution. Please reset.\n");
+	while(1)
+	{
+	}
   /* USER CODE END Error_Handler_Debug */ 
 }
 
