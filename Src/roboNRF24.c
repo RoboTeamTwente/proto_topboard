@@ -38,6 +38,10 @@ void initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t address
 
 	enableAutoRetransmitSlow(spiHandle);
 
+	//enable dynamic packet length, ack payload, dynamic acks
+	writeReg(spiHandle, FEATURE, EN_DPL | EN_ACK_PAY | EN_DYN_ACK);
+
+
 	//set the RX buffer size to 12 bytes
 	setRXbufferSize(spiHandle, 12);
 
@@ -53,9 +57,13 @@ void roboCallback(SPI_HandleTypeDef* spiHandle, dataPacket* dataStruct){
 
 /*
  * TODO
- * I DON'T WANT THIS LOW LEVEL FUNCTIONS
+ * I DON'T WANT THESE LOW LEVEL FUNCTIONS
  * IN A HIGH LEVEL SOURCE FILE!!
  * GO FIX!
+ *
+ * Make a receivePacket() function
+ *
+ *
  */
 	nrf24ceLow(spiHandle);
 	readData(spiHandle, dataArray, 12);
@@ -82,6 +90,10 @@ void roboCallback(SPI_HandleTypeDef* spiHandle, dataPacket* dataStruct){
 	dataStruct->currentAngularVelocity = ((dataArray[9] &0x03) << 9) + (dataArray[10] << 1) + (dataArray[11] & 0x80);
 	dataStruct->videoDataSend = (dataArray[6] & 0x80) >> 7;
 
+	//let's send the data we just received back to the basestation as an ack..
+	//just for testing.. the ACK packets will be looking different when we're done
+
+	//writeACKpayload(spiHandle, dataArray, 12); //eat this, basestation!
 }
 
 
