@@ -97,44 +97,7 @@ uint8_t irqRead(SPI_HandleTypeDef* spiHandle){
 
 }
 
-//write to a register and output debug info to the terminal
-void writeRegDebug(SPI_HandleTypeDef* spiHandle, uint8_t reg, uint8_t data){
-/*	if(reg == 0x0A || reg == 0x0B || reg == 0x10){
-		TextOut("Error, this is a multi-byte register. use writeRegMultiDebug instead\n");
-	}
-	else if(reg > 0x1D || reg == 0x08 || reg == 0x09 || (reg >= 0x17 &&reg <= 0x1B)){
-		TextOut("Error, invalid register. It is either read only or non-existing\n");
-	}
-	else{
-		  //commands can only be given after a falling edge of the nss pin
-		  //see figure 23 of datasheet
 
-		nssLow(spiHandle);
-		uint8_t sendData = setBit(reg, 5, 1); // W_REGISTER = 001A AAAA -> AAAAA = 5 bit register address
-		uint8_t receiveData;
-		uint8_t SPIstatus;
-
-		//comand: write to register reg and get status register
-		SPIstatus = HAL_SPI_TransmitReceive(spiHandle, &sendData, &receiveData, 1, 100);
-
-		sprintf(smallStrBuffer, "writing to reg; spi status = %i", SPIstatus);
-		TextOut(smallStrBuffer);
-		sprintf(smallStrBuffer, "status reg = %x\n", receiveData);
-		TextOut(smallStrBuffer);
-
-		sendData = data;
-		//send data to the register
-		SPIstatus = HAL_SPI_TransmitReceive(spiHandle, &sendData, &receiveData, 1, 100);
-
-		sprintf(smallStrBuffer, "writing to reg; spi status = %i", SPIstatus);
-		TextOut(smallStrBuffer);
-		sprintf(smallStrBuffer, "status reg = %x\n", receiveData);
-		TextOut(smallStrBuffer);
-
-		nssHigh(spiHandle);
-		HAL_Delay(10);
-	}*/
-}
 
 //write to a register
 void writeReg(SPI_HandleTypeDef* spiHandle, uint8_t reg, uint8_t data){
@@ -162,46 +125,7 @@ void writeReg(SPI_HandleTypeDef* spiHandle, uint8_t reg, uint8_t data){
 	}
 }
 
-//write to a multi-byte register and output debug info to the terminal
-void writeRegMultiDebug(SPI_HandleTypeDef* spiHandle, uint8_t reg, uint8_t* data, uint8_t size){
-/*	if(!(reg == 0x0A || reg == 0x0B || reg == 0x10)){
-		TextOut("Error, invalid register. It is either read only, single byte or non-existingd\n");
-	}
-	else if(size > 5){
-		TextOut("Error, size can never be bigger than 5\n");
-	}
-	else{
-		  //commands can only be given after a falling edge of the nss pin
-		  //see figure 23 of datasheet
-		nssLow(spiHandle);
 
-		uint8_t command = setBit(reg, 5, 1); // W_REGISTER = 001A AAAA -> AAAAA = 5 bit register address
-		uint8_t receiveData;
-		uint8_t SPIstatus;
-
-		//comand: write to register reg and get status register
-		SPIstatus = HAL_SPI_TransmitReceive(spiHandle, &command, &receiveData, 1, 100);
-		sprintf(smallStrBuffer, "writing to reg; spi status = %i", SPIstatus);
-		TextOut(smallStrBuffer);
-		sprintf(smallStrBuffer, "status reg = %x\n", receiveData);
-		TextOut(smallStrBuffer);
-
-		//Do not remove the i
-		//it invokes divine intervention
-		int i = 0;
-
-		//send data to the register
-		SPIstatus = HAL_SPI_TransmitReceive(spiHandle, data, &receiveData, size, 100);
-
-		sprintf(smallStrBuffer, "writing to reg; spi status = %i", SPIstatus);
-		TextOut(smallStrBuffer);
-		sprintf(smallStrBuffer, "status reg = %x\n", receiveData);
-		TextOut(smallStrBuffer);
-
-		nssHigh(spiHandle);
-		HAL_Delay(10);
-	}*/
-}
 
 //write to a multi-byte register
 void writeRegMulti(SPI_HandleTypeDef* spiHandle, uint8_t reg, uint8_t* data, uint8_t size){
@@ -234,44 +158,7 @@ void writeRegMulti(SPI_HandleTypeDef* spiHandle, uint8_t reg, uint8_t* data, uin
 	}
 }
 
-//read a register and output debug info to the terminal
-uint8_t readRegDebug(SPI_HandleTypeDef* spiHandle, uint8_t reg){
-/*	if(reg > 0x1D){
-		TextOut("Error, invalid register\n");
-		return 0xF0;
-	}
-	else{
-		//commands can only be given after a falling edge of the nss pin
-		//see figure 23 of datasheet
-		nssLow(spiHandle);
 
-		//command: read reg 5
-		uint8_t sendData = reg; //R_REGISTER = 000A AAAA -> AAAAA = 5 bit register address
-		uint8_t SPIstatus;
-		uint8_t receiveData;
-		//command: read from register reg and get status register
-		SPIstatus = HAL_SPI_TransmitReceive(spiHandle, &sendData, &receiveData, 1, 100);
-
-		sprintf(smallStrBuffer, "read reg; spi status = %i", SPIstatus);
-		TextOut(smallStrBuffer);
-		sprintf(smallStrBuffer, "status reg = %x\n", receiveData);
-		TextOut(smallStrBuffer);
-
-		//read data from the register
-		SPIstatus = HAL_SPI_Receive(spiHandle, &receiveData, 1, 100);
-
-		sprintf(smallStrBuffer, "reading reg; spi status = %i", SPIstatus);
-		TextOut(smallStrBuffer);
-		sprintf(smallStrBuffer, "status reg = %x\n", receiveData);
-		TextOut(smallStrBuffer);
-
-		nssHigh(spiHandle);
-		HAL_Delay(10);
-
-		return receiveData;
-	}*/
-	return 0;
-}
 
 //read a register
 uint8_t readReg(SPI_HandleTypeDef* spiHandle, uint8_t reg){
@@ -299,45 +186,7 @@ uint8_t readReg(SPI_HandleTypeDef* spiHandle, uint8_t reg){
 	}
 }
 
-//read a multi-byte register and output debug info to terminal
-//output will be stored in the array dataBuffer
-void readRegMultiDebug(SPI_HandleTypeDef* spiHandle, uint8_t reg, uint8_t* dataBuffer, uint8_t size){
-/*	if(reg > 0x1D){
-		TextOut("Error, invalid register\n");
-	}
-	else{
-		//commands can only be given after a falling edge of the nss pin
-		//see figure 23 of datasheet
-		nssLow(spiHandle);
 
-		//command: read reg 5
-		uint8_t sendData = reg; //R_REGISTER = 000A AAAA -> AAAAA = 5 bit register address
-		uint8_t SPIstatus;
-		uint8_t receiveData;
-		//command: read from register reg and get status register
-		SPIstatus = HAL_SPI_TransmitReceive(spiHandle, &sendData, &receiveData, 1, 100);
-
-		sprintf(smallStrBuffer, "writing to reg; spi status = %i", SPIstatus);
-		TextOut(smallStrBuffer);
-		sprintf(smallStrBuffer, "status reg = %x\n", receiveData);
-		TextOut(smallStrBuffer);
-
-		//read data from the register
-		SPIstatus = HAL_SPI_Receive(spiHandle, dataBuffer, 5, 100);
-
-		sprintf(smallStrBuffer, "reading reg; spi status = %i\n", SPIstatus);
-		TextOut(smallStrBuffer);
-		for(int i = 0; i < 5; i++){
-			sprintf(smallStrBuffer, "reg = %x\n", dataBuffer[i]);
-			TextOut(smallStrBuffer);
-		}
-		TextOut("\n");
-
-		nssHigh(spiHandle);
-		HAL_Delay(10);
-
-	}*/
-}
 
 //read a multi-byte register
 //output will be stored in the array dataBuffer
@@ -674,202 +523,6 @@ void enableAutoRetransmitSlow(SPI_HandleTypeDef* spiHandle){
 	writeReg(spiHandle, 0x04, 0x11);
 }
 
-//---------------------------------debug----------------------------------//
-
-void printAllRegisters(SPI_HandleTypeDef* spiHandle){
-/*	uint8_t regMulti[5];
-	uint8_t reg;
-	for(int i = 0x00; i <= 0x09; i++){
-		reg = readReg(spiHandle, i);
-		sprintf(smallStrBuffer, "reg %x = %x\n", i, reg);
-		TextOut(smallStrBuffer);
-
-	}
-
-	for(int i = 0x0A; i <= 0x10; i++){
-		readRegMulti(spiHandle, i, regMulti, 5);
-		for(int j = 0; j < 5; j++){
-			sprintf(smallStrBuffer, "reg %x; field %x = %x\n", i, j, regMulti[j]);
-			TextOut(smallStrBuffer);
-
-		}
-	}
-
-	for(int i = 0x11; i <= 0x17; i++){
-
-		reg = readReg(spiHandle, i);
-		sprintf(smallStrBuffer, "reg %x = %x\n", i, reg);
-		TextOut(smallStrBuffer);
-	}
-
-	for(int i = 0x1C; i <= 0x1D; i++){
-		reg = readReg(spiHandle, i);
-		sprintf(smallStrBuffer, "reg %x = %x\n", i, reg);
-		TextOut(smallStrBuffer);
-	}*/
-}
-
-//**********************application specific code*********************//
-
-void initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t address){
-	//reset and flush buffer
-	NRFinit(spiHandle);
-
-	//enable RX interrupts, disable TX interrupts
-	RXinterrupts(spiHandle);
-
-	//set the frequency channel
-	setFreqChannel(spiHandle, freqChannel);
-
-	//enable pipe 0 and 1, diabable all other pipes
-	uint8_t dataPipeArray[6] = {1, 1, 0, 0, 0, 0};
-	setDataPipeArray(spiHandle, dataPipeArray);
-
-	uint8_t addressLong[5] = {0x12, 0x34, 0x56, 0x78, 0x90 + address};
-	//uint8_t addressLong[5] = {0xA8, 0xA8, 0xE1, 0xF0, 0xC6};
-	//set the RX address of channel 1
-	setRXaddress(spiHandle, addressLong, 1);
-
-	setLowSpeed(spiHandle);
-
-	enableAutoRetransmitSlow(spiHandle);
-
-	//set the RX buffer size to 12 bytes
-	setRXbufferSize(spiHandle, 12);
-
-	//go to RX mode and start listening
-	powerUpRX(spiHandle);
-
-
-}
-
-void initBase(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t address[5]){
-	//reset and flush buffer
-	NRFinit(spiHandle);
-
-	//enable RX interrupts, disable TX interrupts
-	TXinterrupts(spiHandle);
-
-	//set the frequency channel
-	setFreqChannel(spiHandle, freqChannel);
-
-	//enable pipe 0, diabable all other pipes
-	//TODO: usually in C you'd do a bit field for that and not a byte array.
-	uint8_t dataPipeArray[6] = {1, 0, 0, 0, 0, 0};
-	setDataPipeArray(spiHandle, dataPipeArray);
-
-	//set the RX buffer size to 8 bytes
-	setRXbufferSize(spiHandle, 12);
-
-	//set the TX address of
-	setTXaddress(spiHandle, address);
-
-	setLowSpeed(spiHandle);
-
-	//go to TX mode and be ready to listen
-	powerUpTX(spiHandle);
-}
-
-uint8_t sendPacketPart1(SPI_HandleTypeDef* spiHandle, uint8_t packet[8]){
-	uint8_t addressLong[5] = {0x12, 0x34, 0x56, 0x78, 0x97};//{0x12, 0x34, 0x56, 0x78, 0x90 + (packet[0] >> 4)};
-	setTXaddress(spiHandle, addressLong);
-	sendData(spiHandle, packet, 12);
-	return addressLong[4];
-}
-
-void waitAck(SPI_HandleTypeDef* spiHandle, uint8_t roboID){
-	if(irqRead(spiHandle)){
-		//check if transmistion was succesful
-		//TextOut("in waitAck!\n");
-		uint8_t succesful;
-		uint8_t reg07 = readReg(spiHandle, 0x07);
-		ceLow(spiHandle);
-		if(readBit(reg07, 4)){
-			succesful = 0;
-		}
-		else if(readBit(reg07, 5)){
-			succesful = 1;
-		}
-		else{
-			succesful = 0xFF;
-			//TextOut("Error: interupt pin high, but no transmission\n");
-		}
-		writeReg(spiHandle, 0x07, 0x3E);
-		uint8_t ack[2] = {roboID, succesful};
-//		sprintf(smallStrBuffer, "id: %i; succesfull: %i\n", roboID, succesful);
-//		TextOut(smallStrBuffer);
-
-	}
-}
-
-
-
-void roboCallback(SPI_HandleTypeDef* spiHandle, dataPacket* dataStruct){
-	uint8_t dataArray[12];
-
-
-
-	ceLow(spiHandle);
-	readData(spiHandle, dataArray, 12);
-	//clear RX interrupt
-	writeReg(spiHandle, 0x07, 0x4E);
-	ceHigh(spiHandle);
-
-
-
-	dataStruct->robotID = dataArray[0] >> 4;
-	dataStruct->robotVelocity = ((dataArray[0] & 0x0F) << 9) + (dataArray[1] << 1) + ((dataArray[2] & 0x80) >> 7);
-	dataStruct->movingDirection = ((dataArray[2] & 0x7F) << 2) + ((dataArray[3] & 0xC0) >> 6);
-	dataStruct->rotationDirection = dataArray[3] & 0x8;
-	dataStruct->angularVelocity = ((dataArray[3] & 0x7) << 8) + dataArray[4];
-	dataStruct->kickForce = dataArray[5];
-	dataStruct->kick = dataArray[6] & 0x40;
-	dataStruct->chipper = dataArray[6] & 0x20;
-	dataStruct->forced = dataArray[6] & 0x10;
-	dataStruct->driblerDirection = dataArray[6] & 0x8;
-	dataStruct->driblerSpeed = dataArray[6] & 0x7;
-	dataStruct->currentRobotVelocity = (dataArray[7] << 5) + ((dataArray[8] & 0xF8) >> 3);
-	dataStruct->currentMovingDirection = ((dataArray[8] & 0x07) << 6) + ((dataArray[9] & 0xFC) >> 2);
-	dataStruct->currentRotationDirection = (dataArray[10] & 0x40) >> 6;
-	dataStruct->currentAngularVelocity = ((dataArray[9] &0x03) << 9) + (dataArray[10] << 1) + (dataArray[11] & 0x80);
-	dataStruct->videoDataSend = (dataArray[6] & 0x80) >> 7;
-
-}
-
-void printDataStruct(dataPacket* dataStruct){
-/*	sprintf(smallStrBuffer, "robotID = %i\n", dataStruct->robotID);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "robotVelocity = %i\n", dataStruct->robotVelocity);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "movingDirection = %i\n", dataStruct->movingDirection);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "rotationDirection = %i\n", dataStruct->rotationDirection);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "angularVelocity = %i\n", dataStruct->angularVelocity);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "kickForce = %i\n", dataStruct->kickForce);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "kick = %i\n", dataStruct->kick);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "chipper = %i\n", dataStruct->chipper);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "forced = %i\n", dataStruct->forced);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "driblerDirection = %i\n", dataStruct->driblerDirection);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "driblerSpeed = %i\n", dataStruct->driblerSpeed);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "currentRobotVelocity = %i\n", dataStruct->currentRobotVelocity);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "currentMovingDirection = %i\n", dataStruct->currentMovingDirection);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "currentRotationDirection = %i\n", dataStruct->currentRotationDirection);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "currentAngularVelocity = %i\n", dataStruct->currentAngularVelocity);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "videoDataSend = %i\n", dataStruct->videoDataSend);
-	TextOut(smallStrBuffer);*/
-}
 
 
 
