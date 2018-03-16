@@ -110,10 +110,10 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   //setup code for using the nRF24 module
-  uint8_t addressOffset = ReadAddress(); //usually that should be the RobotID
-  nssHigh(&hspi2); //I think we need that, but I can't really say, yet, why we would need to call low-level functions in main()
+  uint8_t robotID = ReadAddress(); //usually that should be the RobotID
+  nrf24nssHigh(); //I think we need that, but I can't really say, yet, why we would need to call low-level functions in main()
 
-  initRobo(&hspi2, RADIO_CHANNEL, addressOffset);
+  initRobo(&hspi2, RADIO_CHANNEL, robotID);
   dataPacket dataStruct;
 
   /* USER CODE END 2 */

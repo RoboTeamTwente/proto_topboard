@@ -12,8 +12,13 @@
 #include <roboNRF24.h>
 
 void initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t address){
+	/*
+	 * TODO
+	 * I need to review all those settings and need to check
+	 * if this is acutally compatible with what I configured the basestation with.
+	 */
 	//reset and flush buffer
-	NRFinit(spiHandle);
+	NRFinit(spiHandle, nrf24nssHigh, nrf24nssLow, nrf24ceHigh, nrf24ceLow, nrf24irqRead );
 
 	//enable RX interrupts, disable TX interrupts
 	RXinterrupts(spiHandle);
@@ -22,8 +27,7 @@ void initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t address
 	setFreqChannel(spiHandle, freqChannel);
 
 	//enable pipe 0 and 1, diabable all other pipes
-	uint8_t dataPipeArray[6] = {1, 1, 0, 0, 0, 0};
-	setDataPipeArray(spiHandle, dataPipeArray);
+	setDataPipes(spiHandle, ERX_P0 | ERX_P1);
 
 	uint8_t addressLong[5] = {0x12, 0x34, 0x56, 0x78, 0x90 + address};
 	//uint8_t addressLong[5] = {0xA8, 0xA8, 0xE1, 0xF0, 0xC6};
@@ -47,12 +51,17 @@ void roboCallback(SPI_HandleTypeDef* spiHandle, dataPacket* dataStruct){
 	uint8_t dataArray[12];
 
 
-
-	ceLow(spiHandle);
+/*
+ * TODO
+ * I DON'T WANT THIS LOW LEVEL FUNCTIONS
+ * IN A HIGH LEVEL SOURCE FILE!!
+ * GO FIX!
+ */
+	nrf24ceLow(spiHandle);
 	readData(spiHandle, dataArray, 12);
 	//clear RX interrupt
 	writeReg(spiHandle, 0x07, 0x4E);
-	ceHigh(spiHandle);
+	nrf24ceHigh(spiHandle);
 
 
 
@@ -75,41 +84,37 @@ void roboCallback(SPI_HandleTypeDef* spiHandle, dataPacket* dataStruct){
 
 }
 
-void printDataStruct(dataPacket* dataStruct){
-/*	sprintf(smallStrBuffer, "robotID = %i\n", dataStruct->robotID);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "robotVelocity = %i\n", dataStruct->robotVelocity);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "movingDirection = %i\n", dataStruct->movingDirection);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "rotationDirection = %i\n", dataStruct->rotationDirection);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "angularVelocity = %i\n", dataStruct->angularVelocity);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "kickForce = %i\n", dataStruct->kickForce);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "kick = %i\n", dataStruct->kick);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "chipper = %i\n", dataStruct->chipper);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "forced = %i\n", dataStruct->forced);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "driblerDirection = %i\n", dataStruct->driblerDirection);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "driblerSpeed = %i\n", dataStruct->driblerSpeed);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "currentRobotVelocity = %i\n", dataStruct->currentRobotVelocity);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "currentMovingDirection = %i\n", dataStruct->currentMovingDirection);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "currentRotationDirection = %i\n", dataStruct->currentRotationDirection);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "currentAngularVelocity = %i\n", dataStruct->currentAngularVelocity);
-	TextOut(smallStrBuffer);
-	sprintf(smallStrBuffer, "videoDataSend = %i\n", dataStruct->videoDataSend);
-	TextOut(smallStrBuffer);*/
+
+/*
+ * Pin setters and reader
+ */
+
+
+//put the nss pin corresponding to the SPI used high
+void nrf24nssHigh(){
+	//NSS / CSN : chip select
+	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
+}
+
+//put the nss pin corresponding to the SPI used low
+void nrf24nssLow(){
+	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET);
+}
+
+//put the ce pin corresponding to the SPI used high
+void nrf24ceHigh(){
+	//CE: chip enable
+	//In this board revision, this pin is directly connected to Vdd ("high").
+}
+
+//put the ce pin corresponding to the SPI used low
+void nrf24ceLow(){
+	//HAL_GPIO_WritePin(GPIOD, CE_SPI3_Pin, GPIO_PIN_RESET);
+	//In this board revision, this pin is directly connected to Vdd ("high").
 }
 
 
-
-
+//read the interrupt pin
+uint8_t nrf24irqRead(){
+	return !HAL_GPIO_ReadPin(SPI2_IRQ_GPIO_Port, SPI2_IRQ_Pin);
+}
