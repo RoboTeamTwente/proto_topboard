@@ -28,6 +28,21 @@ void roboCallback(SPI_HandleTypeDef* spiHandle, dataPacket* dataStruct);
 void printDataStruct(dataPacket* dataStruct);
 
 
+/*
+ * Pin setters
+ */
+
+//put the nss pin corresponding to the SPI used high
+void nrf24nssHigh();
+
+//put the nss pin corresponding to the SPI used low
+void nrf24nssLow();
+
+//put the ce pin corresponding to the SPI used high
+void nrf24ceHigh();
+
+//put the ce pin corresponding to the SPI used low
+void nrf24ceLow();
 
 
 #endif /* ROBONRF24_H_ */
