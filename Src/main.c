@@ -36,6 +36,7 @@
   ******************************************************************************
   */
 /* Includes ------------------------------------------------------------------*/
+#include <roboNRF24.h>
 #include "main.h"
 #include "stm32f3xx_hal.h"
 #include "spi.h"
@@ -47,6 +48,7 @@
 #include <stdbool.h>
 #include "PuttyInterface/PuttyInterface.h"
 #include "myNRF24.h"
+#include "roboNRF24.h"
 
 /* USER CODE END Includes */
 
