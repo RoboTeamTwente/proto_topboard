@@ -119,25 +119,27 @@ void printDataStruct(dataPacket* dataStruct){
  */
 
 
-//TODO: fill in the GPIOs of the top board which connect the nRF24 module to the MCU
 //put the nss pin corresponding to the SPI used high
 void nrf24nssHigh(){
 	//NSS / CSN : chip select
-	//HAL_GPIO_WritePin(GPIOD, CSN_SPI3_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
 }
 
 //put the nss pin corresponding to the SPI used low
 void nrf24nssLow(){
-	//HAL_GPIO_WritePin(GPIOD, CSN_SPI3_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET);
 }
 
 //put the ce pin corresponding to the SPI used high
 void nrf24ceHigh(){
 	//CE: chip enable
-	//HAL_GPIO_WritePin(GPIOD, CE_SPI3_Pin, GPIO_PIN_SET);
+	//In this board revision, this pin is directly connected to Vdd ("high").
 }
 
 //put the ce pin corresponding to the SPI used low
 void nrf24ceLow(){
 	//HAL_GPIO_WritePin(GPIOD, CE_SPI3_Pin, GPIO_PIN_RESET);
+	//In this board revision, this pin is directly connected to Vdd ("high").
 }
+
+
