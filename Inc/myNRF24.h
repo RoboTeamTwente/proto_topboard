@@ -102,6 +102,8 @@ void readData(SPI_HandleTypeDef* spiHandle, uint8_t* receiveBuffer, uint8_t leng
 
 void setLowSpeed(SPI_HandleTypeDef* spiHandle);
 
+void enableAutoRetransmitSlow(SPI_HandleTypeDef* spiHandle);
+
 //write ACK payload to module
 //this payload will be included in the payload of ACK packets when automatic acknowledgments are activated
 int8_t writeACKpayload(SPI_HandleTypeDef* spiHandle, uint8_t* payloadBytes, uint8_t payload_length);

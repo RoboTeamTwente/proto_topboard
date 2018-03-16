@@ -12,6 +12,11 @@
 #include <roboNRF24.h>
 
 void initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t address){
+	/*
+	 * TODO
+	 * I need to review all those settings and need to check
+	 * if this is acutally compatible with what I configured the basestation with.
+	 */
 	//reset and flush buffer
 	NRFinit(spiHandle, nrf24nssHigh, nrf24nssLow, nrf24ceHigh, nrf24ceLow, nrf24irqRead );
 
@@ -22,8 +27,7 @@ void initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t address
 	setFreqChannel(spiHandle, freqChannel);
 
 	//enable pipe 0 and 1, diabable all other pipes
-	uint8_t dataPipeArray[6] = {1, 1, 0, 0, 0, 0};
-	setDataPipeArray(spiHandle, dataPipeArray);
+	setDataPipes(spiHandle, ERX_P0 | ERX_P1);
 
 	uint8_t addressLong[5] = {0x12, 0x34, 0x56, 0x78, 0x90 + address};
 	//uint8_t addressLong[5] = {0xA8, 0xA8, 0xE1, 0xF0, 0xC6};
