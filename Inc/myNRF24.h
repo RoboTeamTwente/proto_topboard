@@ -18,39 +18,9 @@
 #include "spi.h"
 
 
-typedef struct dataPacket {
-  uint8_t robotID; // 0 to 15
-  uint16_t robotVelocity; //between 0 and 4095mm/s
-  uint16_t movingDirection; // resolution: 2pi/512 radians
-  uint8_t rotationDirection; //0 = cw; 1 = ccw;
-  uint16_t angularVelocity; //0 to 2047 deg/s
-  uint8_t kickForce; // 0 to 255
-  uint8_t forced; // 0 = normal kick; 1 = forced kick
-  uint8_t chipper; // 0 = kicker; 1 = chipper
-  uint8_t kick; // 0 = do not kick; 1 = kick according to forced and chipper
-  uint8_t driblerDirection; // 0 = cw; 1 = ccw;
-  uint8_t driblerSpeed; // between 0 and 7
-  uint16_t currentRobotVelocity;
-  uint16_t currentMovingDirection; // resolution: 2pi/512 radians
-  uint8_t currentRotationDirection; //0 = cw; 1 = ccw;
-  uint16_t currentAngularVelocity; //0 to 2047 deg/s
-  uint8_t videoDataSend;
-
-} dataPacket;
-
-struct ackPacket {
-  uint8_t robotID;
-  uint8_t succes;
-};
-
-extern dataPacket dataStruct;
-
 
 //*************************auxillery functions**********************************//
 //*******************not actually for NRF24 control*****************************//
-
-//blink leds for debugging purposes
-void fun();
 
 //set a specific bit in a byte to a 1 or a 0
 uint8_t setBit(uint8_t byte, uint8_t position, uint8_t value);
