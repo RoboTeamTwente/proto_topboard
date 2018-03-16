@@ -20,9 +20,6 @@
 #include "myNRF24.h"
 #include "myNRF24basic.h"
 
-#include <string.h>
-
-
 //****************************high level library**************************//
 //********************the user may use these functions********************//
 
@@ -342,19 +339,11 @@ void sendData(SPI_HandleTypeDef* spiHandle, uint8_t data[], uint8_t length){
 //Edit: the datasheet say it is used in RX mode. It doesn't say it is only(!) used in RX mode.
 //     Afaik, you also need to use it in TX mode when you want to read an ACK payload
 void readData(SPI_HandleTypeDef* spiHandle, uint8_t* receiveBuffer, uint8_t length){
-	uint8_t receivedData[length];
-
 	nssLow(spiHandle);
-
-	uint8_t command = NRF_R_RX_PAYLOAD; //R_RX_PAYLOAD
+	uint8_t command = NRF_R_RX_PAYLOAD;
 	HAL_SPI_Transmit(spiHandle, &command, 1, 100);
-
-	HAL_SPI_Receive(spiHandle, receivedData, length, 100);
-
+	HAL_SPI_Receive(spiHandle, receiveBuffer, length, 100);
 	nssHigh(spiHandle);
-
-	memcpy(receiveBuffer, receivedData, length);
-
 }
 
 

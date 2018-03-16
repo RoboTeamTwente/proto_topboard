@@ -10,11 +10,11 @@
 #ifndef MYNRF24_H_
 #define MYNRF24_H_
 
-#define PI 3.14159
+//#define PI 3.14159
 
-#include "TextOut.h"
-#include "gpio.h"
-#include "stm32f3xx_hal.h"
+//#include "TextOut.h"
+//#include "gpio.h"
+//#include "stm32f3xx_hal.h"
 #include "spi.h"
 #include <inttypes.h>
 
