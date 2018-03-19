@@ -145,7 +145,7 @@ int main(void)
 
 	  if(irqRead(&hspi2)){
 		  uprintf("Received something..\n");
-		  roboCallback(&hspi2, &dataStruct);
+		  roboCallback(&dataStruct);
 		  if(dataStruct.robotID == ReadAddress()){
 			  uprintf("It's for me!\n");
 			  //blink
@@ -235,7 +235,7 @@ void HandleCommand(char * input){
 	}else if(!strcmp(input, "reg")) {
 		uprintf("You are trying to read registers.\n");
 		uprintf("This feature is under construction.\n");
-		uint8_t registerOutput = readReg(&hspi2, 0x0A); //0x0A = RX_ADDR_P0 -- Receiving Address, Data Pipe 0.
+		uint8_t registerOutput = readReg(RX_ADDR_P0); //0x0A = RX_ADDR_P0 -- Receiving Address, Data Pipe 0.
 		uprintf("RX_ADDR_P0: 0x%x\n", registerOutput);
 		uprintf("This output will be more explanatory in the future.\n");
 	}else if(!strcmp(input, "help")) {

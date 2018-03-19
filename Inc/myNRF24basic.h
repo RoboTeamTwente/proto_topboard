@@ -200,27 +200,27 @@ uint8_t (*irqRead)();
 //uint8_t irqRead(SPI_HandleTypeDef* spiHandle);
 
 //returns 0 on success; -1 on error
-int8_t clearInterrupts(SPI_HandleTypeDef* spiHandle);
+int8_t clearInterrupts();
 
 
 //write to a register
 //returns 0 on success; -1 on error
-int8_t writeReg(SPI_HandleTypeDef* spiHandle, uint8_t reg, uint8_t data);
+int8_t writeReg(uint8_t reg, uint8_t data);
 
 //write to a multi-byte register
 //returns 0 on success; -1 on error
-int8_t writeRegMulti(SPI_HandleTypeDef* spiHandle, uint8_t reg, uint8_t* pdata, uint8_t size);
+int8_t writeRegMulti(uint8_t reg, uint8_t* pdata, uint8_t size);
 
 //read a register and output debug info to the terminal
-uint8_t readRegDebug(SPI_HandleTypeDef* spiHandle, uint8_t reg);
+uint8_t readRegDebug(uint8_t reg);
 
 //read a register
-uint8_t readReg(SPI_HandleTypeDef* spiHandle, uint8_t reg);
+uint8_t readReg(uint8_t reg);
 
 //read a multi-byte register
 //output will be stored in the array dataBuffer
 //returns 0 on success; -1 on error
-int8_t readRegMulti(SPI_HandleTypeDef* spiHandle, uint8_t reg, uint8_t* dataBuffer, uint8_t size);
+int8_t readRegMulti(uint8_t reg, uint8_t* dataBuffer, uint8_t size);
 
 
 

@@ -60,7 +60,7 @@ extern dataPacket dataStruct;
 
 void initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t address);
 
-void roboCallback(SPI_HandleTypeDef* spiHandle, dataPacket* dataStruct);
+void roboCallback(dataPacket* dataStruct);
 
 void printDataStruct(dataPacket* dataStruct);
 

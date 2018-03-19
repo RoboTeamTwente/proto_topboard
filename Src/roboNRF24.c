@@ -21,37 +21,37 @@ void initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t address
 	NRFinit(spiHandle, nrf24nssHigh, nrf24nssLow, nrf24ceHigh, nrf24ceLow, nrf24irqRead );
 
 	//enable RX interrupts, disable TX interrupts
-	RXinterrupts(spiHandle);
+	RXinterrupts();
 
 	//set the frequency channel
-	setFreqChannel(spiHandle, freqChannel);
+	setFreqChannel(freqChannel);
 
 	//enable pipe 0 and 1, diabable all other pipes
-	setDataPipes(spiHandle, ERX_P0 | ERX_P1);
+	setDataPipes(ERX_P0 | ERX_P1);
 
 	uint8_t addressLong[5] = {0x12, 0x34, 0x56, 0x78, 0x90 + address};
 	//uint8_t addressLong[5] = {0xA8, 0xA8, 0xE1, 0xF0, 0xC6};
 	//set the RX address of data pipe 1
-	setRXaddress(spiHandle, addressLong, 1);
+	setRXaddress(addressLong, 1);
 
-	setLowSpeed(spiHandle);
+	setLowSpeed();
 
-	enableAutoRetransmitSlow(spiHandle);
+	enableAutoRetransmitSlow();
 
 	//enable dynamic packet length, ack payload, dynamic acks
-	writeReg(spiHandle, FEATURE, EN_DPL | EN_ACK_PAY | EN_DYN_ACK);
+	writeReg(FEATURE, EN_DPL | EN_ACK_PAY | EN_DYN_ACK);
 
 
 	//set the RX buffer size to 12 bytes
-	setRXbufferSize(spiHandle, 12);
+	setRXbufferSize(12);
 
 	//go to RX mode and start listening
-	powerUpRX(spiHandle);
+	powerUpRX();
 
 
 }
 
-void roboCallback(SPI_HandleTypeDef* spiHandle, dataPacket* dataStruct){
+void roboCallback(dataPacket* dataStruct){
 	uint8_t dataArray[12];
 
 
@@ -65,11 +65,11 @@ void roboCallback(SPI_HandleTypeDef* spiHandle, dataPacket* dataStruct){
  *
  *
  */
-	nrf24ceLow(spiHandle);
-	readData(spiHandle, dataArray, 12);
+	nrf24ceLow();
+	readData(dataArray, 12);
 	//clear RX interrupt
-	writeReg(spiHandle, 0x07, 0x4E);
-	nrf24ceHigh(spiHandle);
+	writeReg(0x07, 0x4E);
+	nrf24ceHigh();
 
 
 
