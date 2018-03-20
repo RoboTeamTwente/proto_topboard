@@ -58,7 +58,7 @@ extern dataPacket dataStruct;
  * End of structures which might not belong here
  */
 
-void initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t address);
+int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t address);
 
 void roboCallback(dataPacket* dataStruct);
 
