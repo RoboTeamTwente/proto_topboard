@@ -17,6 +17,11 @@
 #include "myNRF24.h"
 
 //defining SPI Commands (datasheet, page 48)
+/*
+ * There are commands which hold bits for arguments, such as the
+ * NRF_R_REGISTER command, which has 5 bits for the register number.
+ * There is a way how you can define a
+ */
 #define NRF_R_REGISTER 0x00 //000AAAAA, AAAAA= Register
 #define NRF_W_REGISTER 0b00100000 //001AAAAA, AAAAA= Register
 #define NRF_R_RX_PAYLOAD 0b01100001
@@ -32,6 +37,10 @@
 
 //defining registers
 //see datasheet page 54 and following
+/*
+ * TODO
+ * Include a short description of all registers in the comments.
+ */
 enum nrfRegister {
 	CONFIG, //0x00
 	EN_AA, //0x01
@@ -170,7 +179,7 @@ enum DYNPD_FLAG {
 enum FEATURE_FLAG {
 	EN_DPL = 1<<2,
 	EN_ACK_PAY = 1<<1,
-	EN_DYN_ACK = 1<<0,
+	EN_DYN_ACK = 1<<0, //enables the W_TX_PAYLOAD_NOACK SPI command
 };
 
 
@@ -215,7 +224,9 @@ int8_t writeRegMulti(uint8_t reg, uint8_t* pdata, uint8_t size);
 uint8_t readRegDebug(uint8_t reg);
 
 //read a register
-uint8_t readReg(uint8_t reg);
+//on error: (-1) on SPI problem. (-2) on invalid argument.
+//on success: returns the register value
+int8_t readReg(uint8_t reg);
 
 //read a multi-byte register
 //output will be stored in the array dataBuffer

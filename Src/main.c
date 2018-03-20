@@ -60,7 +60,7 @@
 //values for puttyinterface.h
 uint8_t rec_buf[8];
 char small_buf;
-bool huart2_Rx_flag = false;
+volatile bool huart2_Rx_flag = false;
 
 /* USER CODE END PV */
 
@@ -113,7 +113,9 @@ int main(void)
   uint8_t robotID = ReadAddress(); //usually that should be the RobotID
   nrf24nssHigh(); //I think we need that, but I can't really say, yet, why we would need to call low-level functions in main()
 
-  initRobo(&hspi2, RADIO_CHANNEL, robotID);
+  while(initRobo(&hspi2, RADIO_CHANNEL, robotID) != 0) {
+	  uprintf("Error while initializing nRF wireless module. Check connections.\n");
+  }
   dataPacket dataStruct;
 
   /* USER CODE END 2 */
@@ -123,7 +125,8 @@ int main(void)
   char * startmessage = "---------------------\n\r";
   uprintf(startmessage);
   uprintf("Build: %s %s\n", __DATE__, __TIME__);
-  HAL_UART_Receive_IT(&huart1, rec_buf, 1);
+
+  HAL_UART_Receive_IT(&huart1, rec_buf, 1); //This is needed for debugging input/output on serial
 
   //int tick = 0;
   HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
@@ -143,8 +146,14 @@ int main(void)
 		  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED3_Pin);
 	  }
 
-	  if(irqRead(&hspi2)){
-		  uprintf("Received something..\n");
+	  if(irqRead()){
+		  uprintf("Interrupt up..\n");
+		  uint8_t status_reg = readReg(STATUS);
+		  uint8_t rx_dr = (status_reg & RX_DR) > 0;
+		  uint8_t tx_ds = (status_reg & TX_DS) > 0;
+		  uint8_t max_rt = (status_reg & MAX_RT) > 0;
+		  uint8_t tx_full = (status_reg & STATUS_TX_FULL) > 0;
+		  uprintf("Interrupts:\n rx_dr: %i, tx_ds: %i, max_rt: %i, tx_full: %i\n", rx_dr, tx_ds, max_rt, tx_full);
 		  roboCallback(&dataStruct);
 		  if(dataStruct.robotID == ReadAddress()){
 			  uprintf("It's for me!\n");
@@ -158,6 +167,10 @@ int main(void)
 		  }
 		  //HAL_Delay(10);
 		  //flushRX(&hspi2);
+
+		  //clearing interrupts without checking why the interrupt was there
+		  //not a good idea in general
+		  //clearInterrupts();
 	  }
 	  /* END nRF24 polling */
 

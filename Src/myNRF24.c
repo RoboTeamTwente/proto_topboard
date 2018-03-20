@@ -27,10 +27,10 @@
 
 //initialize the system:
 //reset it and enable pipe 1 and 0
-//set pipeWith to 1
+//set pipeWidth to 1
 //flush TX and RX buffer
 //arguments: SpiHandle and functions which implement pin setters for NSS and CE and reader for IRQ
-void NRFinit(SPI_HandleTypeDef* nrf24spiHandle, void (*nrf24nssHigh)(), void (*nrf24nssLow)(), void (*nrf24ceHigh)(), void (*nrf24ceLow)(), uint8_t (*nrf24irqRead)() ){
+int8_t NRFinit(SPI_HandleTypeDef* nrf24spiHandle, void (*nrf24nssHigh)(), void (*nrf24nssLow)(), void (*nrf24ceHigh)(), void (*nrf24ceLow)(), uint8_t (*nrf24irqRead)() ){
 	//set references to pin setter functions
 	nssHigh = nrf24nssHigh;
 	nssLow = nrf24nssLow;
@@ -42,6 +42,12 @@ void NRFinit(SPI_HandleTypeDef* nrf24spiHandle, void (*nrf24nssHigh)(), void (*n
 
 	//global reference to spiHandle
 	spiHandle = nrf24spiHandle;
+
+	//reading the status register to check for errors with the SPI communication
+	uint8_t status_reg = getStatusReg(); //if the read fails, it will return -1
+	if(status_reg == -1) {
+		return -1; // SPI error! Is the module connected and is the SPI configured properly?
+	}
 
 	//reset system
 
@@ -56,16 +62,22 @@ void NRFinit(SPI_HandleTypeDef* nrf24spiHandle, void (*nrf24nssHigh)(), void (*n
 
 	//enable RX pipe 0 and 1, disable all other pipes
 	writeReg(EN_RXADDR, ERX_P0|ERX_P1);
+	//alternatively you can write:
+	//enableDataPipe(0);
+	//enableDataPipe(1);
+	//I'm not sure which way is more elegant.
 
-	//set RX pipe with of pipe 0 to 1 byte.
-	writeReg(RX_PW_P0, 0x01);
 
-	//set RX pipe with of pipe 1 to 1 byte.
-	writeReg(RX_PW_P1, 0x01);
+	//The datasheet says about RX_PW_PX (any number for X):
+	// "Number of bytes in RX payload in data pipe [X]."
+	//The value can be read and written. So I wonder what it does when you write to it.
+	//writeReg(RX_PW_P0, 12);
+	//writeReg(RX_PW_P1, 12);
 
 	flushRX();
 	flushTX();
 
+	return 0; //init successful
 }
 
 //reset all register values to reset values on page 54, datasheet
@@ -105,7 +117,9 @@ void softResetRegisters(){
 
 }
 
-
+int8_t getStatusReg() {
+	return readReg(STATUS);
+}
 
 //set own address note: only data pipe 0 is used in this implementation
 //returns 0 on success; -1 on error
@@ -155,14 +169,9 @@ int8_t enableDataPipe(uint8_t pipeNumber){
 //disable a RX data pipe
 //note: pipe 0 is invalid, as it is used for acks
 int8_t disableDataPipe(uint8_t pipeNumber){
-	if(pipeNumber == 0){
-		//TextOut("Error, pipe 0 reserved for acks\n");
+	if(pipeNumber == 0 || pipeNumber > 5)
 		return -1; //error: invalid pipeNumber
-	}
-	else if(pipeNumber > 5){
-		//TextOut("Error, max pipe number = 5 \n");
-		return -1; //error: invalid pipeNumber
-	}
+
 	uint8_t pipeEnableReg = readReg(EN_RXADDR);
 	pipeEnableReg = setBit(pipeEnableReg, pipeNumber, 0);
 	writeReg(EN_RXADDR, pipeEnableReg);// disable pipe
@@ -390,6 +399,8 @@ int8_t writeACKpayload(uint8_t* payloadBytes, uint8_t payload_length) {
 	//See: https://shantamraj.wordpress.com/2014/11/30/auto-ack-completely-fixed/ (visited 13th March, 2018)
 
 	//you may want to call writeACKpayload() in the procedure which reads a packet
+
+	flushTX(); //will ensure that we don't overflow with 3 ACK packets or more
 	nssLow();
 
 	uint8_t spi_command = NRF_W_ACK_PAYLOAD;
@@ -451,6 +462,7 @@ int8_t getAck(uint8_t* ack_payload) {
 			 //TODO: I don't really like to set it to a fixed length here. I would rather like to read a global macro (#define PAYLOAD_LENGTH ?)
 			readData(ack_payload, 12);
 
+			//TODO: only clear relevant interrups (TX_DS and RX_DR).
 			clearInterrupts();
 
 			return 1; //success
