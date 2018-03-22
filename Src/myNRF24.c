@@ -61,7 +61,7 @@ int8_t NRFinit(SPI_HandleTypeDef* nrf24spiHandle, void (*nrf24nssHigh)(), void (
 	clearInterrupts();
 
 	//enable RX pipe 0 and 1, disable all other pipes
-	writeReg(EN_RXADDR, ERX_P0|ERX_P1);
+	writeReg(EN_RXADDR, ERX_P1);
 	//alternatively you can write:
 	//enableDataPipe(0);
 	//enableDataPipe(1);
