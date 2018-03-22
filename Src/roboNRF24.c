@@ -35,18 +35,21 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
 	//enable pipe 0 and 1, diabable all other pipes
 	setDataPipes(ERX_P0 | ERX_P1);
 
-	uint8_t addressLong[5] = {0x12, 0x34, 0x56, 0x78, 0x90 + roboID};
+	uint8_t addressLong[5] = {0b11010000 + roboID, 0x12, 0x34, 0x56, 0x78};
 	//uint8_t addressLong[5] = {0xA8, 0xA8, 0xE1, 0xF0, 0xC6};
 	//set the RX address of data pipe 1
 	setRXaddress(addressLong, 1);
+
+	//addressLong[0] = 0x00;
+	writeRegMulti(TX_ADDR, addressLong, 5);
 
 	setLowSpeed();
 
 	//enableAutoRetransmitSlow(); //I wouldn't know why the robot would do any auto-retransmission action
 
-	uint8_t arc=3; //auto-retransmit count
-	uint8_t ard=1; //auto-retransmit delay
-	writeReg(SETUP_RETR, (ard<<3)|(arc&0b111));
+	uint8_t arc=0b1111; //auto-retransmit count
+	uint8_t ard=0b1111; //auto-retransmit delay
+	writeReg(SETUP_RETR, (ard<<4)|(arc&0b111));
 
 
 	//enable dynamic packet length, ack payload, dynamic acks
@@ -58,11 +61,20 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
 
 
 	//set the RX buffer size to 12 bytes
-	setRXbufferSize(12);
-	writeReg(DYNPD, DPL_P0); //enable dynamic packet length for data pipe 1
+	//setRXbufferSize(12);
+	writeReg(DYNPD, DPL_P0 | DPL_P1); //enable dynamic packet length for data pipe 1
 
 	//go to RX mode and start listening
 	powerUpRX();
+
+	uint8_t dummyvalue = 0x33;
+	if(writeACKpayload(&dummyvalue, 1) != 0) { //eat this, basestation!
+		uprintf("Error writing ACK payload.\n");
+		return -1;
+	} else {
+		uprintf("ACK payload written with the following payload: ");
+		uprintf("%2x \n",dummyvalue);
+	}
 
 	return 0;
 }
@@ -136,7 +148,7 @@ void roboCallback(dataPacket* dataStruct){
 	}
 	uprintf("\n");
 
-
+	flushRX();
 
 
 
@@ -159,7 +171,7 @@ void roboCallback(dataPacket* dataStruct){
 
 //just for testing.. the ACK packets will be looking different when we're done
 /* */
-	/*
+
 	uint8_t dummyvalue = 0xfa; //a dummy value to be sent as an ACK
 	if(writeACKpayload(&dummyvalue, 1) != 0) { //eat this, basestation!
 		uprintf("Error writing ACK payload.\n");
@@ -168,7 +180,12 @@ void roboCallback(dataPacket* dataStruct){
 		uprintf("ACK payload written with the following payload: ");
 		uprintf("%2x \n",dummyvalue);
 	}
-	*/
+
+	//HAL_Delay(10);
+	//flushRX();
+	//flushTX();
+	//clearInterrupts();
+
 }
 
 
