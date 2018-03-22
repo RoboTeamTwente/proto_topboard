@@ -47,15 +47,15 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
 
 
 	//enable dynamic packet length, ack payload, dynamic acks
-	writeReg(FEATURE, EN_DPL | EN_ACK_PAY | EN_DYN_ACK);
+	//writeReg(FEATURE, EN_DPL | EN_ACK_PAY | EN_DYN_ACK);
 
 	//enable Auto Acknowledgment for Pipe 1
-	writeReg(EN_AA, ENAA_P1);
+	//writeReg(EN_AA, ENAA_P1);
 
 
 	//set the RX buffer size to 12 bytes
-	//setRXbufferSize(12);
-	writeReg(DYNPD, DPL_P1); //enable dynamic packet length for data pipe 1
+	setRXbufferSize(12);
+	//writeReg(DYNPD, DPL_P1); //enable dynamic packet length for data pipe 1
 
 	//go to RX mode and start listening
 	powerUpRX();
@@ -85,12 +85,14 @@ void roboCallback(dataPacket* dataStruct){
 	uprintf("New packet on Pipe Number: %i   ", dataPipeNo);
 
 	//retrieve the amount of bytes of the specified data pipe
-	//uint8_t bytesReceived = readReg(RX_PW_P0 + dataPipeNo) & 0b11111;
+	uint8_t bytesReceived = readReg(RX_PW_P0 + dataPipeNo) & 0b11111;
+
+	/*
 	uint8_t bytesReceived;
 	uint8_t command = NRF_R_RX_PL_WID; //read rx payload length
 	HAL_SPI_Transmit(spiHandle, &command, 1, 100);
 	HAL_SPI_Receive(spiHandle, &bytesReceived, 1, 100);
-
+	*/
 	uprintf("Received Amount of Bytes: %i   ", bytesReceived);
 
 	/*
@@ -145,7 +147,8 @@ void roboCallback(dataPacket* dataStruct){
 	dataStruct->videoDataSend = (dataArray[6] & 0x80) >> 7;
 
 //just for testing.. the ACK packets will be looking different when we're done
-
+/* */
+	/*
 	uint8_t dummyvalue = 0xfa; //a dummy value to be sent as an ACK
 	if(writeACKpayload(&dummyvalue, 1) != 0) { //eat this, basestation!
 		uprintf("Error writing ACK payload.\n");
@@ -153,13 +156,8 @@ void roboCallback(dataPacket* dataStruct){
 	} else {
 		uprintf("ACK payload written with the following payload: ");
 		uprintf("%2x \n",dummyvalue);
-		/*
-		for(int i=0; i<bytesReceived; i++) {
-			uprintf("%02x ", dataArray[i]);
-		}
-		uprintf("\n");
-		*/
 	}
+	*/
 }
 
 
