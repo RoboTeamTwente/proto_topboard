@@ -33,7 +33,7 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
 	setFreqChannel(freqChannel);
 
 	//enable pipe 0 and 1, diabable all other pipes
-	setDataPipes(ERX_P1);
+	setDataPipes(ERX_P0 | ERX_P1);
 
 	uint8_t addressLong[5] = {0x12, 0x34, 0x56, 0x78, 0x90 + roboID};
 	//uint8_t addressLong[5] = {0xA8, 0xA8, 0xE1, 0xF0, 0xC6};
@@ -44,18 +44,22 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
 
 	//enableAutoRetransmitSlow(); //I wouldn't know why the robot would do any auto-retransmission action
 
+	uint8_t arc=3; //auto-retransmit count
+	uint8_t ard=1; //auto-retransmit delay
+	writeReg(SETUP_RETR, (ard<<3)|(arc&0b111));
 
 
 	//enable dynamic packet length, ack payload, dynamic acks
-	//writeReg(FEATURE, EN_DPL | EN_ACK_PAY | EN_DYN_ACK);
+	writeReg(FEATURE, EN_DPL | EN_ACK_PAY | EN_DYN_ACK);
 
+	//writeReg(FEATURE, readReg(FEATURE)|EN_DPL);
 	//enable Auto Acknowledgment for Pipe 1
-	//writeReg(EN_AA, ENAA_P1);
+	writeReg(EN_AA, ENAA_P1);
 
 
 	//set the RX buffer size to 12 bytes
 	setRXbufferSize(12);
-	//writeReg(DYNPD, DPL_P1); //enable dynamic packet length for data pipe 1
+	writeReg(DYNPD, DPL_P0); //enable dynamic packet length for data pipe 1
 
 	//go to RX mode and start listening
 	powerUpRX();
@@ -94,6 +98,13 @@ void roboCallback(dataPacket* dataStruct){
 	HAL_SPI_Receive(spiHandle, &bytesReceived, 1, 100);
 	*/
 	uprintf("Received Amount of Bytes: %i   ", bytesReceived);
+
+	/*
+	uint8_t command = NRF_R_RX_PL_WID; //read rx payload length
+	HAL_SPI_Transmit(spiHandle, &command, 1, 100);
+	HAL_SPI_Receive(spiHandle, &bytesReceived, 1, 100);
+	uprintf("Received Amount of Bytes: %i   ", bytesReceived);
+	*/
 
 	/*
 	 * TODO

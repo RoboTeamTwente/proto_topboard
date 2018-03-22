@@ -257,7 +257,19 @@ void HandleCommand(char * input){
 		uprintf("SETUP_RETR: 0x%02x\n", readReg(SETUP_RETR));
 		uprintf("RF_CH: 0x%02x\n", readReg(RF_CH));
 		uprintf("RF_SETUP: 0x%02x\n", readReg(RF_SETUP));
-		uprintf("STATUS: 0x%02x\n", readReg(STATUS));
+
+		uint8_t status_reg = readReg(STATUS);
+		uprintf("STATUS: 0x%02x ( ", status_reg);
+		if(status_reg & RX_DR) uprintf("RX_DR ");
+		if(status_reg & TX_DS) uprintf("TX_DS ");
+		if(status_reg & MAX_RT) uprintf("MAX_RT ");
+		uint8_t pipeNo = (status_reg >> 1)&7;
+		if(pipeNo >= 0 && pipeNo <= 0b101) uprintf("PIPE:%i ", pipeNo);
+		if(pipeNo == 0b110) uprintf("RX_FIFO:not_used ");
+		if(pipeNo == 0b111) uprintf("RX_FIFO:empty ");
+		if(status_reg & STATUS_TX_FULL) uprintf("TX_FULL ");
+		uprintf(")\n");
+
 		uprintf("OBSERVE_TX: 0x%02x\n", readReg(OBSERVE_TX));
 		uprintf("RPD: 0x%02x\n", readReg(RPD));
 		uint8_t buffer[5];
@@ -282,7 +294,15 @@ void HandleCommand(char * input){
 		uprintf("RX_PW_P3: 0x%02x\n", readReg(RX_PW_P3));
 		uprintf("RX_PW_P4: 0x%02x\n", readReg(RX_PW_P4));
 		uprintf("RX_PW_P5: 0x%02x\n", readReg(RX_PW_P5));
-		uprintf("FIFO_STATUS: 0x%02x\n", readReg(FIFO_STATUS));
+		uint8_t fifo_status = readReg(FIFO_STATUS);
+		uprintf("FIFO_STATUS: 0x%02x  ( ", fifo_status);
+		if(fifo_status & TX_REUSE) uprintf("TX_REUSE ");
+		if(fifo_status & FIFO_STATUS_TX_FULL) uprintf("TX_FULL ");
+		if(fifo_status & TX_EMPTY) uprintf("TX_EMPTY ");
+		if(fifo_status & RX_FULL) uprintf("RX_FULL ");
+		if(fifo_status & RX_EMPTY) uprintf("RX_EMPTY ");
+		uprintf(" )\n");
+
 		uprintf("DYNPD: 0x%02x\n", readReg(DYNPD));
 		uprintf("FEATURE: 0x%02x\n", readReg(FEATURE));
 

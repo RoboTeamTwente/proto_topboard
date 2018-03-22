@@ -21,8 +21,8 @@
 // amount of commands that will be remembered
 #define COMMANDS_TO_REMEMBER 16
 #define MAX_COMMAND_LENGTH   64
-#define uprintf(...) sprintf(smallStrBuffer, __VA_ARGS__); \
-	TextOut(smallStrBuffer)
+#define uprintf(...) { sprintf(smallStrBuffer, __VA_ARGS__); \
+	TextOut(smallStrBuffer); }
 
 #ifdef PUTTY_USART
 #define huartx huart1
