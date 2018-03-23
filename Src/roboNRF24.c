@@ -12,7 +12,7 @@
 #include <roboNRF24.h>
 #include "PuttyInterface/PuttyInterface.h" //should be removed after debugging
 
-int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t address){
+int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboID){
 	/*
 	 * TODO
 	 * I need to review all those settings and need to check
@@ -23,45 +23,67 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t addre
 		return -1; //error
 	}
 
-	//enable RX interrupts, disable TX interrupts
-	RXinterrupts();
-
 	//activate all interrupts
-	//writeReg(CONFIG, readReg(CONFIG) & ~(MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT));
+	writeReg(CONFIG, readReg(CONFIG) & ~(MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT));
 
-	//set the frequency channel
 	setFreqChannel(freqChannel);
-
-	//enable pipe 0 and 1, diabable all other pipes
-	setDataPipes(ERX_P0 | ERX_P1);
-
-	uint8_t addressLong[5] = {0x12, 0x34, 0x56, 0x78, 0x90 + address};
-	//uint8_t addressLong[5] = {0xA8, 0xA8, 0xE1, 0xF0, 0xC6};
-	//set the RX address of data pipe 1
-	setRXaddress(addressLong, 1);
-
 	setLowSpeed();
 
-	enableAutoRetransmitSlow();
+
+	//enable pipe 0 and 1, disable all other pipes
+	setDataPipes(ERX_P1);
+
+	uint8_t addressLong[5] = {0b11010000 + roboID, 0x12, 0x34, 0x56, 0x78};
+	//uint8_t addressLong[5] = {0xA8, 0xA8, 0xE1, 0xF0, 0xC6};
+	//set the RX address of data pipe x
+	setRXaddress(addressLong, 0);
+	setRXaddress(addressLong, 1);
+
+	//addressLong[0] = 0x00;
+	writeRegMulti(TX_ADDR, addressLong, 5);
 
 
-	//enable Auto Acknowledgment for Pipe 1
-	//writeReg(EN_AA, ENAA_P1);
+
+	uint8_t arc=0b1111; //auto-retransmit count
+	uint8_t ard=0b1111; //auto-retransmit delay
+	writeReg(SETUP_RETR, (ard<<4)|(arc&0b1111));
+
 
 	//enable dynamic packet length, ack payload, dynamic acks
-	//writeReg(FEATURE, EN_DPL | EN_ACK_PAY);
+	writeReg(FEATURE, EN_DPL | EN_ACK_PAY | EN_DYN_ACK);
+
+	//enable Auto Acknowledgment for Pipe 1
+	writeReg(EN_AA, ENAA_P1);
 
 
-
-	//set the RX buffer size to 12 bytes
-	setRXbufferSize(12);
+	//enable dynamic packet length for data pipe(s)
+	//according to the datasheet (page 60) we need to activate DPL for pipe 0 to use
+	//ACKs with payload -- even on the PRX (doesn't make sense to me).
+	writeReg(DYNPD, DPL_P1);
 
 	//go to RX mode and start listening
 	powerUpRX();
 
+	//preparing a dummy-payload which will be sent
+	//when the very first packet was received
+	uint8_t dummyvalue = 0x33;
+	if(writeACKpayload(&dummyvalue, 1, 1) != 0) { //eat this, basestation!
+		uprintf("Error writing ACK payload.\n");
+		return -1;
+	} else {
+		uprintf("ACK payload written with the following payload: ");
+		uprintf("%2x \n",dummyvalue);
+	}
+
 	return 0;
 }
-
+/*
+ * TODO
+ * this needs to be extended that it will read payloads in a loop
+ * as long as there is data in the FIFO.
+ * Read the FIFO_STATUS and check RX_EMPTY.
+ *
+ */
 void roboCallback(dataPacket* dataStruct){
 	uint8_t dataArray[12];
 
@@ -71,49 +93,45 @@ void roboCallback(dataPacket* dataStruct){
 		//if no packet arrived, abort
 		return;
 	}
-	uprintf("In roboCallback. A packet arrived.");
+
+	//blink
+	HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
+	HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
+
+	//uprintf("In roboCallback. A packet arrived.");
 
 	//retrieve on which pipe number the new packet arrived
 	uint8_t dataPipeNo = (status_reg >> 1) & 0b111; //reading RX_P_NO
 
-	uprintf("New packet on Pipe Number: %i\n", dataPipeNo);
+	uprintf("New packet on Pipe Number: %i   ", dataPipeNo);
 
-	//retrieve the amount of bytes of the specified data pipe
-	uint8_t bytesReceived = readReg(RX_PW_P0 + dataPipeNo) & 0b11111;
-
-	uprintf("Received Amount of Bytes: %i\n", bytesReceived);
+	uint8_t bytesReceived = getDynamicPayloadLength();
+	uprintf("with payload length: %i Bytes  --  ", bytesReceived);
 
 	/*
-	 * TODO
-	 * I DON'T WANT THESE LOW LEVEL FUNCTIONS
-	 * IN A HIGH LEVEL SOURCE FILE!!
-	 * GO FIX!
-	 *
-	 * Make a receivePacket() function
-	 *
-	 *
+	 * Put that into a readPayload() function ?
 	 */
-
 	nrf24ceLow();
+	//actually reading the payload
 	readData(dataArray, bytesReceived);
 	//clear RX interrupt
 	uprintf("Clearing RX_DR interrupt.\n");
 	writeReg(STATUS, RX_DR);
 	nrf24ceHigh();
 
-	uprintf("Raw packet data in DEC: \n");
+	uprintf("Raw packet data in DEC: ");
 	for(int i=0; i<bytesReceived; i++) {
 		uprintf("%i ", dataArray[i]);
 	}
 	uprintf("\n");
 
-	uprintf("Raw packet data in HEX: \n");
+	uprintf("Raw packet data in HEX: ");
 	for(int i=0; i<bytesReceived; i++) {
 		uprintf("%02x ", dataArray[i]);
 	}
 	uprintf("\n");
 
-
+	flushRX();
 
 
 
@@ -135,21 +153,22 @@ void roboCallback(dataPacket* dataStruct){
 	dataStruct->videoDataSend = (dataArray[6] & 0x80) >> 7;
 
 //just for testing.. the ACK packets will be looking different when we're done
+/* */
 
-	uint8_t dummyvalue = 0xff; //a dummy value to be sent as an ACK
-	if(writeACKpayload(&dummyvalue, 1) != 0) { //eat this, basestation!
-		uprintf("Error writing ACK payload.\n");
+	uint8_t dummyvalue = 0xfa; //a dummy value to be sent as an ACK
+	if(writeACKpayload(&dummyvalue, 1, dataPipeNo) != 0) { //eat this, basestation!
+		uprintf("Error writing ACK payload. TX FIFO full?\n");
 		return;
 	} else {
-		uprintf("ACK payload written with the following payload: \n");
+		uprintf("ACK payload written with the following payload: ");
 		uprintf("%2x \n",dummyvalue);
-		/*
-		for(int i=0; i<bytesReceived; i++) {
-			uprintf("%02x ", dataArray[i]);
-		}
-		uprintf("\n");
-		*/
 	}
+
+	//HAL_Delay(10);
+	//flushRX();
+	//flushTX();
+	//clearInterrupts();
+
 }
 
 

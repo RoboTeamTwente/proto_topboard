@@ -147,30 +147,28 @@ int main(void)
 	  }
 
 	  if(irqRead()){
-		  uprintf("Interrupt up..\n");
+		  //some debug outputs about interrupt flags
 		  uint8_t status_reg = readReg(STATUS);
 		  uint8_t rx_dr = (status_reg & RX_DR) > 0;
 		  uint8_t tx_ds = (status_reg & TX_DS) > 0;
 		  uint8_t max_rt = (status_reg & MAX_RT) > 0;
 		  uint8_t tx_full = (status_reg & STATUS_TX_FULL) > 0;
-		  uprintf("Interrupts:\n rx_dr: %i, tx_ds: %i, max_rt: %i, tx_full: %i\n", rx_dr, tx_ds, max_rt, tx_full);
-		  roboCallback(&dataStruct);
-		  if(dataStruct.robotID == ReadAddress()){
-			  uprintf("It's for me!\n");
-			  //blink
-			  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
-			  HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
 
-		  }
-		  else {
-			  uprintf("It was for: %i", dataStruct.robotID);
-		  }
-		  //HAL_Delay(10);
-		  //flushRX(&hspi2);
+		  if(tx_ds) {
+			  uprintf("ACK payload delivered. Clearing TX_DS! Oke, doei!\n");
+			  writeReg(STATUS, TX_DS);
+		  } else {
 
-		  //clearing interrupts without checking why the interrupt was there
-		  //not a good idea in general
-		  //clearInterrupts();
+			  uprintf("Interrupts: rx_dr: %i, tx_ds: %i, max_rt: %i, tx_full: %i    ", rx_dr, tx_ds, max_rt, tx_full);
+
+			  //handle interrupts and incoming packets
+			  roboCallback(&dataStruct);
+
+			  if(tx_full) {
+				  uprintf("TX FIFO is full. Flushing buffer...\n");
+				  flushTX();
+			  }
+		  }
 	  }
 	  /* END nRF24 polling */
 
@@ -246,11 +244,67 @@ void HandleCommand(char * input){
 	}else if(!strcmp(input, "address")){
 		uprintf("Address = [%d]\n\r", ReadAddress());
 	}else if(!strcmp(input, "reg")) {
-		uprintf("You are trying to read registers.\n");
-		uprintf("This feature is under construction.\n");
-		uint8_t registerOutput = readReg(RX_ADDR_P0); //0x0A = RX_ADDR_P0 -- Receiving Address, Data Pipe 0.
-		uprintf("RX_ADDR_P0: 0x%x\n", registerOutput);
-		uprintf("This output will be more explanatory in the future.\n");
+		uprintf("Reading registers.\n");
+		//uprintf("This feature is under construction.\n");
+		//uint8_t registerOutput = readReg(RX_ADDR_P0); //0x0A = RX_ADDR_P0 -- Receiving Address, Data Pipe 0.
+		//uprintf("RX_ADDR_P0: 0x%x\n", registerOutput);
+		//uprintf("This output will be more explanatory in the future.\n");
+		uprintf("CONFIG: 0x%02x\n", readReg(CONFIG));
+		uprintf("EN_AA: 0x%02x\n", readReg(EN_AA));
+		uprintf("EN_RXADDR: 0x%02x\n", readReg(EN_RXADDR));
+		uprintf("SETUP_AW: 0x%02x\n", readReg(SETUP_AW));
+		uprintf("SETUP_RETR: 0x%02x\n", readReg(SETUP_RETR));
+		uprintf("RF_CH: 0x%02x\n", readReg(RF_CH));
+		uprintf("RF_SETUP: 0x%02x\n", readReg(RF_SETUP));
+
+		uint8_t status_reg = readReg(STATUS);
+		uprintf("STATUS: 0x%02x ( ", status_reg);
+		if(status_reg & RX_DR) uprintf("RX_DR ");
+		if(status_reg & TX_DS) uprintf("TX_DS ");
+		if(status_reg & MAX_RT) uprintf("MAX_RT ");
+		uint8_t pipeNo = (status_reg >> 1)&7;
+		if(pipeNo >= 0 && pipeNo <= 0b101) uprintf("PIPE:%i ", pipeNo);
+		if(pipeNo == 0b110) uprintf("RX_FIFO:not_used ");
+		if(pipeNo == 0b111) uprintf("RX_FIFO:empty ");
+		if(status_reg & STATUS_TX_FULL) uprintf("TX_FULL ");
+		uprintf(")\n");
+
+		uprintf("OBSERVE_TX: 0x%02x\n", readReg(OBSERVE_TX));
+		uprintf("RPD: 0x%02x\n", readReg(RPD));
+		uint8_t buffer[5];
+		readRegMulti(RX_ADDR_P0, buffer, 5);
+		uprintf("RX_ADDR_P0: 0x%x%x%x%x%x\n", buffer[0],buffer[1],buffer[2],buffer[3],buffer[4]);
+		readRegMulti(RX_ADDR_P1, buffer, 5);
+		uprintf("RX_ADDR_P1: 0x%x%x%x%x%x\n", buffer[0],buffer[1],buffer[2],buffer[3],buffer[4]);
+		readRegMulti(RX_ADDR_P2, buffer, 5);
+		uprintf("RX_ADDR_P2: 0x%x%x%x%x%x\n", buffer[0],buffer[1],buffer[2],buffer[3],buffer[4]);
+		readRegMulti(RX_ADDR_P3, buffer, 5);
+		uprintf("RX_ADDR_P3: 0x%x%x%x%x%x\n", buffer[0],buffer[1],buffer[2],buffer[3],buffer[4]);
+		readRegMulti(RX_ADDR_P4, buffer, 5);
+		uprintf("RX_ADDR_P4: 0x%x%x%x%x%x\n", buffer[0],buffer[1],buffer[2],buffer[3],buffer[4]);
+		readRegMulti(RX_ADDR_P5, buffer, 5);
+		uprintf("RX_ADDR_P5: 0x%x%x%x%x%x\n", buffer[0],buffer[1],buffer[2],buffer[3],buffer[4]);
+
+		readRegMulti(TX_ADDR, buffer, 5);
+		uprintf("TX_ADDR: 0x%x%x%x%x%x\n", buffer[0],buffer[1],buffer[2],buffer[3],buffer[4]);
+		uprintf("RX_PW_P0: 0x%02x\n", readReg(RX_PW_P0));
+		uprintf("RX_PW_P1: 0x%02x\n", readReg(RX_PW_P1));
+		uprintf("RX_PW_P2: 0x%02x\n", readReg(RX_PW_P2));
+		uprintf("RX_PW_P3: 0x%02x\n", readReg(RX_PW_P3));
+		uprintf("RX_PW_P4: 0x%02x\n", readReg(RX_PW_P4));
+		uprintf("RX_PW_P5: 0x%02x\n", readReg(RX_PW_P5));
+		uint8_t fifo_status = readReg(FIFO_STATUS);
+		uprintf("FIFO_STATUS: 0x%02x  ( ", fifo_status);
+		if(fifo_status & TX_REUSE) uprintf("TX_REUSE ");
+		if(fifo_status & FIFO_STATUS_TX_FULL) uprintf("TX_FULL ");
+		if(fifo_status & TX_EMPTY) uprintf("TX_EMPTY ");
+		if(fifo_status & RX_FULL) uprintf("RX_FULL ");
+		if(fifo_status & RX_EMPTY) uprintf("RX_EMPTY ");
+		uprintf(" )\n");
+
+		uprintf("DYNPD: 0x%02x\n", readReg(DYNPD));
+		uprintf("FEATURE: 0x%02x\n", readReg(FEATURE));
+
 	}else if(!strcmp(input, "help")) {
 		uprintf("----HELP----\n");
 		uprintf("Build: %s %s\n", __DATE__, __TIME__);
@@ -259,7 +313,7 @@ void HandleCommand(char * input){
 		uprintf("help -- Prints this help message\n");
 		uprintf("start -- Not implemented\n");
 		uprintf("address -- Prints the address as read from the DIP switches on the board.\n");
-		uprintf("reg -- Print the values of some registers. Call without Parameters.\n");
+		uprintf("reg -- Print the values of some registers. Call Swithout Parameters.\n");
 		uprintf("(this list may be incomplete)\n");
 	}
 }

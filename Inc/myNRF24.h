@@ -107,9 +107,17 @@ void setLowSpeed();
 
 void enableAutoRetransmitSlow();
 
+//returns the payloadlength of a received packet when received
+//on a datapipe with DPL (Dynamic Payload Length)
+uint8_t getDynamicPayloadLength();
+
+//returns the payload length of a received packet for data pipes
+//which don't use DPL (dynamic payload length)
+uint8_t getStaticPayloadLength(uint8_t dataPipeNo);
+
 //write ACK payload to module
 //this payload will be included in the payload of ACK packets when automatic acknowledgments are activated
-int8_t writeACKpayload(uint8_t* payloadBytes, uint8_t payload_length);
+int8_t writeACKpayload(uint8_t* payloadBytes, uint8_t payload_length, uint8_t pipeNo);
 
 //called by the basestation to receive ack data
 //if there is data, it will be stored in the given ack_payload array
