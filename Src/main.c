@@ -153,10 +153,22 @@ int main(void)
 		  uint8_t tx_ds = (status_reg & TX_DS) > 0;
 		  uint8_t max_rt = (status_reg & MAX_RT) > 0;
 		  uint8_t tx_full = (status_reg & STATUS_TX_FULL) > 0;
-		  uprintf("Interrupts: rx_dr: %i, tx_ds: %i, max_rt: %i, tx_full: %i    ", rx_dr, tx_ds, max_rt, tx_full);
 
-		  //handle interrupts and incoming packets
-		  roboCallback(&dataStruct);
+		  if(tx_ds) {
+			  uprintf("ACK payload delivered. Clearing TX_DS! Oke, doei!\n");
+			  writeReg(STATUS, TX_DS);
+		  } else {
+
+			  uprintf("Interrupts: rx_dr: %i, tx_ds: %i, max_rt: %i, tx_full: %i    ", rx_dr, tx_ds, max_rt, tx_full);
+
+			  //handle interrupts and incoming packets
+			  roboCallback(&dataStruct);
+
+			  if(tx_full) {
+				  uprintf("TX FIFO is full. Flushing buffer...\n");
+				  flushTX();
+			  }
+		  }
 	  }
 	  /* END nRF24 polling */
 

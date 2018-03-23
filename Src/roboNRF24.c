@@ -23,29 +23,26 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
 		return -1; //error
 	}
 
-	//enable RX interrupts, disable TX interrupts
-	//RXinterrupts();
-
-	//activate interrupts
+	//activate all interrupts
 	writeReg(CONFIG, readReg(CONFIG) & ~(MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT));
 
-	//set the frequency channel
 	setFreqChannel(freqChannel);
+	setLowSpeed();
 
-	//enable pipe 0 and 1, diabable all other pipes
-	setDataPipes(ERX_P0 | ERX_P1);
+
+	//enable pipe 0 and 1, disable all other pipes
+	setDataPipes(ERX_P1);
 
 	uint8_t addressLong[5] = {0b11010000 + roboID, 0x12, 0x34, 0x56, 0x78};
 	//uint8_t addressLong[5] = {0xA8, 0xA8, 0xE1, 0xF0, 0xC6};
-	//set the RX address of data pipe 1
+	//set the RX address of data pipe x
+	setRXaddress(addressLong, 0);
 	setRXaddress(addressLong, 1);
 
 	//addressLong[0] = 0x00;
 	writeRegMulti(TX_ADDR, addressLong, 5);
 
-	setLowSpeed();
 
-	//enableAutoRetransmitSlow(); //I wouldn't know why the robot would do any auto-retransmission action
 
 	uint8_t arc=0b1111; //auto-retransmit count
 	uint8_t ard=0b1111; //auto-retransmit delay
@@ -55,21 +52,22 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
 	//enable dynamic packet length, ack payload, dynamic acks
 	writeReg(FEATURE, EN_DPL | EN_ACK_PAY | EN_DYN_ACK);
 
-	//writeReg(FEATURE, readReg(FEATURE)|EN_DPL);
 	//enable Auto Acknowledgment for Pipe 1
 	writeReg(EN_AA, ENAA_P1);
 
 
-	//set the RX buffer size to 12 bytes
-	setRXbufferSize(30);
-	//writeReg(RX_PW_P1, 0);
-	writeReg(DYNPD, DPL_P0 | DPL_P1); //enable dynamic packet length for data pipe 1
+	//enable dynamic packet length for data pipe(s)
+	//according to the datasheet (page 60) we need to activate DPL for pipe 0 to use
+	//ACKs with payload -- even on the PRX (doesn't make sense to me).
+	writeReg(DYNPD, DPL_P1);
 
 	//go to RX mode and start listening
 	powerUpRX();
 
+	//preparing a dummy-payload which will be sent
+	//when the very first packet was received
 	uint8_t dummyvalue = 0x33;
-	if(writeACKpayload(&dummyvalue, 1) != 0) { //eat this, basestation!
+	if(writeACKpayload(&dummyvalue, 1, 1) != 0) { //eat this, basestation!
 		uprintf("Error writing ACK payload.\n");
 		return -1;
 	} else {
@@ -79,7 +77,13 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
 
 	return 0;
 }
-
+/*
+ * TODO
+ * this needs to be extended that it will read payloads in a loop
+ * as long as there is data in the FIFO.
+ * Read the FIFO_STATUS and check RX_EMPTY.
+ *
+ */
 void roboCallback(dataPacket* dataStruct){
 	uint8_t dataArray[12];
 
@@ -104,7 +108,11 @@ void roboCallback(dataPacket* dataStruct){
 	uint8_t bytesReceived = getDynamicPayloadLength();
 	uprintf("with payload length: %i Bytes  --  ", bytesReceived);
 
+	/*
+	 * Put that into a readPayload() function ?
+	 */
 	nrf24ceLow();
+	//actually reading the payload
 	readData(dataArray, bytesReceived);
 	//clear RX interrupt
 	uprintf("Clearing RX_DR interrupt.\n");
@@ -148,8 +156,8 @@ void roboCallback(dataPacket* dataStruct){
 /* */
 
 	uint8_t dummyvalue = 0xfa; //a dummy value to be sent as an ACK
-	if(writeACKpayload(&dummyvalue, 1) != 0) { //eat this, basestation!
-		uprintf("Error writing ACK payload.\n");
+	if(writeACKpayload(&dummyvalue, 1, dataPipeNo) != 0) { //eat this, basestation!
+		uprintf("Error writing ACK payload. TX FIFO full?\n");
 		return;
 	} else {
 		uprintf("ACK payload written with the following payload: ");

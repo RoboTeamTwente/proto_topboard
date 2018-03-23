@@ -410,7 +410,7 @@ uint8_t getStaticPayloadLength(uint8_t dataPipeNo) {
 }
 //write ACK payload to module
 //this payload will be included in the payload of ACK packets when automatic acknowledgments are activated
-int8_t writeACKpayload(uint8_t* payloadBytes, uint8_t payload_length) {
+int8_t writeACKpayload(uint8_t* payloadBytes, uint8_t payload_length, uint8_t pipeNo) {
 	//This function should be called as often as a packet was received (either before or after reception),
 	//because the module can only hold up to 3 ACK packets.
 	//It will use up one of the packets as a response when it receives a packet.
@@ -418,10 +418,15 @@ int8_t writeACKpayload(uint8_t* payloadBytes, uint8_t payload_length) {
 
 	//you may want to call writeACKpayload() in the procedure which reads a packet
 
-	flushTX(); //will ensure that we don't overflow with 3 ACK packets or more
+
+	if(readReg(FIFO_STATUS) & FIFO_STATUS_TX_FULL) {
+		//flushTX(); //will ensure that we don't overflow with 3 ACK packets or more
+		return -1; //error: FIFO full
+	}
+
 	nssLow();
 
-	uint8_t spi_command = NRF_W_ACK_PAYLOAD;
+	uint8_t spi_command = NRF_W_ACK_PAYLOAD | pipeNo;
 	//activate spi command
 	if(HAL_SPI_Transmit(spiHandle, &spi_command,1, 100) != HAL_OK)
 		return -1; //HAL/SPI error
