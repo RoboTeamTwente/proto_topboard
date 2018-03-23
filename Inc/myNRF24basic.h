@@ -226,7 +226,7 @@ uint8_t readRegDebug(uint8_t reg);
 //read a register
 //on error: (-1) on SPI problem. (-2) on invalid argument.
 //on success: returns the register value
-int8_t readReg(uint8_t reg);
+uint8_t readReg(uint8_t reg);
 
 //read a multi-byte register
 //output will be stored in the array dataBuffer

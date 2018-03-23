@@ -147,29 +147,16 @@ int main(void)
 	  }
 
 	  if(irqRead()){
-		  //uprintf("Interrupt up..\n");
+		  //some debug outputs about interrupt flags
 		  uint8_t status_reg = readReg(STATUS);
 		  uint8_t rx_dr = (status_reg & RX_DR) > 0;
 		  uint8_t tx_ds = (status_reg & TX_DS) > 0;
 		  uint8_t max_rt = (status_reg & MAX_RT) > 0;
 		  uint8_t tx_full = (status_reg & STATUS_TX_FULL) > 0;
 		  uprintf("Interrupts: rx_dr: %i, tx_ds: %i, max_rt: %i, tx_full: %i    ", rx_dr, tx_ds, max_rt, tx_full);
+
+		  //handle interrupts and incoming packets
 		  roboCallback(&dataStruct);
-		  /*
-		  if(dataStruct.robotID == ReadAddress()){
-			  uprintf("It's for me!\n");
-
-		  }
-		  else {
-			  uprintf("It was for: %i", dataStruct.robotID);
-		  }
-		  */
-		  //HAL_Delay(10);
-		  //flushRX(&hspi2);
-
-		  //clearing interrupts without checking why the interrupt was there
-		  //not a good idea in general
-		  //clearInterrupts();
 	  }
 	  /* END nRF24 polling */
 

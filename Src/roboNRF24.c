@@ -49,7 +49,7 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
 
 	uint8_t arc=0b1111; //auto-retransmit count
 	uint8_t ard=0b1111; //auto-retransmit delay
-	writeReg(SETUP_RETR, (ard<<4)|(arc&0b111));
+	writeReg(SETUP_RETR, (ard<<4)|(arc&0b1111));
 
 
 	//enable dynamic packet length, ack payload, dynamic acks
@@ -61,7 +61,8 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
 
 
 	//set the RX buffer size to 12 bytes
-	//setRXbufferSize(12);
+	setRXbufferSize(30);
+	//writeReg(RX_PW_P1, 0);
 	writeReg(DYNPD, DPL_P0 | DPL_P1); //enable dynamic packet length for data pipe 1
 
 	//go to RX mode and start listening
@@ -100,34 +101,8 @@ void roboCallback(dataPacket* dataStruct){
 
 	uprintf("New packet on Pipe Number: %i   ", dataPipeNo);
 
-	//retrieve the amount of bytes of the specified data pipe
-	uint8_t bytesReceived = readReg(RX_PW_P0 + dataPipeNo) & 0b11111;
-
-	/*
-	uint8_t bytesReceived;
-	uint8_t command = NRF_R_RX_PL_WID; //read rx payload length
-	HAL_SPI_Transmit(spiHandle, &command, 1, 100);
-	HAL_SPI_Receive(spiHandle, &bytesReceived, 1, 100);
-	*/
-	uprintf("Received Amount of Bytes: %i   ", bytesReceived);
-
-	/*
-	uint8_t command = NRF_R_RX_PL_WID; //read rx payload length
-	HAL_SPI_Transmit(spiHandle, &command, 1, 100);
-	HAL_SPI_Receive(spiHandle, &bytesReceived, 1, 100);
-	uprintf("Received Amount of Bytes: %i   ", bytesReceived);
-	*/
-
-	/*
-	 * TODO
-	 * I DON'T WANT THESE LOW LEVEL FUNCTIONS
-	 * IN A HIGH LEVEL SOURCE FILE!!
-	 * GO FIX!
-	 *
-	 * Make a receivePacket() function
-	 *
-	 *
-	 */
+	uint8_t bytesReceived = getDynamicPayloadLength();
+	uprintf("with payload length: %i Bytes  --  ", bytesReceived);
 
 	nrf24ceLow();
 	readData(dataArray, bytesReceived);

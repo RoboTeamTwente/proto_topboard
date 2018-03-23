@@ -97,7 +97,7 @@ int8_t writeRegMulti(uint8_t reg, uint8_t* pdata, uint8_t size){
 //read a register
 //on error: (-1) on SPI problem. (-2) on invalid argument.
 //on success: returns the register value
-int8_t readReg(uint8_t reg){
+uint8_t readReg(uint8_t reg){
 	if(reg > 0x1D){
 		return -2; //error: invalid register
 	}
@@ -110,11 +110,11 @@ int8_t readReg(uint8_t reg){
 	uint8_t receiveData;
 	//command: read from register reg
 	if(HAL_SPI_Transmit(spiHandle, &sendData, 1, 100) != HAL_OK)
-		return -1; //error: SPI problem
+		return 0xff; //error: SPI problem
 
 	//read data from the register
 	if(HAL_SPI_Receive(spiHandle, &receiveData, 1, 100) != HAL_OK)
-		return -1; //error: SPI problem
+		return 0xff; //error: SPI problem
 
 	nssHigh();
 	//HAL_Delay(10);
