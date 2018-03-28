@@ -34,7 +34,7 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
 	setDataPipes(ERX_P1);
 
 	//with respect to the following discussion: https://devzone.nordicsemi.com/f/nordic-q-a/20235/nrf24l01p-data-pipe-forbidden-numbers
-	//the address was chosen to not start or and with a lot of zeros or a lot of ones or
+	//the address was chosen to not start or end with a lot of zeros or a lot of ones or
 	//an alternating series which could be mistaken for the preamble.
 	//Therefore, 0x99 was chosen, as it represents the bit series: "10011001"
 	uint8_t addressLong[5] = {0x99, 0xB0 + roboID, 0x34, 0x56, 0x99};
