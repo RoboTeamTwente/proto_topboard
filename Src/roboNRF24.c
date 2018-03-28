@@ -36,18 +36,7 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
 	uint8_t addressLong[5] = {0b11010000 + roboID, 0x12, 0x34, 0x56, 0x78};
 	//uint8_t addressLong[5] = {0xA8, 0xA8, 0xE1, 0xF0, 0xC6};
 	//set the RX address of data pipe x
-	setRXaddress(addressLong, 0);
 	setRXaddress(addressLong, 1);
-
-	//addressLong[0] = 0x00;
-	writeRegMulti(TX_ADDR, addressLong, 5);
-
-
-
-	uint8_t arc=0b1111; //auto-retransmit count
-	uint8_t ard=0b1111; //auto-retransmit delay
-	writeReg(SETUP_RETR, (ard<<4)|(arc&0b1111));
-
 
 	//enable dynamic packet length, ack payload, dynamic acks
 	writeReg(FEATURE, EN_DPL | EN_ACK_PAY | EN_DYN_ACK);
@@ -57,8 +46,6 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
 
 
 	//enable dynamic packet length for data pipe(s)
-	//according to the datasheet (page 60) we need to activate DPL for pipe 0 to use
-	//ACKs with payload -- even on the PRX (doesn't make sense to me).
 	writeReg(DYNPD, DPL_P1);
 
 	//go to RX mode and start listening
@@ -67,14 +54,7 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
 	//preparing a dummy-payload which will be sent
 	//when the very first packet was received
 	uint8_t dummyvalue = 0x33;
-	if(writeACKpayload(&dummyvalue, 1, 1) != 0) { //eat this, basestation!
-		uprintf("Error writing ACK payload.\n");
-		return -1;
-	} else {
-		uprintf("ACK payload written with the following payload: ");
-		uprintf("%2x \n",dummyvalue);
-	}
-
+	writeACKpayload(&dummyvalue, 1, 1);
 	return 0;
 }
 /*
