@@ -27,7 +27,7 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
 	writeReg(CONFIG, readReg(CONFIG) & ~(MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT));
 
 	setFreqChannel(freqChannel);
-	setLowSpeed();
+	//setLowSpeed();
 
 
 	//enable pipe 0 and 1, disable all other pipes
