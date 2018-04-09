@@ -69,6 +69,7 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
  *
  */
 void roboCallback(dataPacket* dataStruct){
+	uint8_t verbose = 0;
 	uint8_t dataArray[12];
 
 
@@ -87,10 +88,10 @@ void roboCallback(dataPacket* dataStruct){
 	//retrieve on which pipe number the new packet arrived
 	uint8_t dataPipeNo = (status_reg >> 1) & 0b111; //reading RX_P_NO
 
-	uprintf("New packet on Pipe Number: %i   ", dataPipeNo);
+	if(verbose) uprintf("New packet on Pipe Number: %i   ", dataPipeNo);
 
 	uint8_t bytesReceived = getDynamicPayloadLength();
-	uprintf("with payload length: %i Bytes  --  ", bytesReceived);
+	if(verbose) uprintf("with payload length: %i Bytes  --  ", bytesReceived);
 
 	/*
 	 * Put that into a readPayload() function ?
@@ -99,21 +100,23 @@ void roboCallback(dataPacket* dataStruct){
 	//actually reading the payload
 	readData(dataArray, bytesReceived);
 	//clear RX interrupt
-	uprintf("Clearing RX_DR interrupt.\n");
+	if(verbose) uprintf("Clearing RX_DR interrupt.\n");
 	writeReg(STATUS, RX_DR);
 	nrf24ceHigh();
 
-	uprintf("Raw packet data in DEC: ");
-	for(int i=0; i<bytesReceived; i++) {
-		uprintf("%i ", dataArray[i]);
-	}
-	uprintf("\n");
+	if(verbose) {
+		uprintf("Raw packet data in DEC: ");
+		for(int i=0; i<bytesReceived; i++) {
+			uprintf("%i ", dataArray[i]);
+		}
+		uprintf("\n");
 
-	uprintf("Raw packet data in HEX: ");
-	for(int i=0; i<bytesReceived; i++) {
-		uprintf("%02x ", dataArray[i]);
+		uprintf("Raw packet data in HEX: ");
+		for(int i=0; i<bytesReceived; i++) {
+			uprintf("%02x ", dataArray[i]);
+		}
+		uprintf("\n");
 	}
-	uprintf("\n");
 
 	flushRX();
 
@@ -141,11 +144,13 @@ void roboCallback(dataPacket* dataStruct){
 
 	uint8_t dummyvalue = 0xfa; //a dummy value to be sent as an ACK
 	if(writeACKpayload(&dummyvalue, 1, dataPipeNo) != 0) { //eat this, basestation!
-		uprintf("Error writing ACK payload. TX FIFO full?\n");
+		if(verbose) uprintf("Error writing ACK payload. TX FIFO full?\n");
 		return;
 	} else {
-		uprintf("ACK payload written with the following payload: ");
-		uprintf("%2x \n",dummyvalue);
+		if(verbose) {
+			uprintf("ACK payload written with the following payload: ");
+			uprintf("%2x \n",dummyvalue);
+		}
 	}
 
 	//HAL_Delay(10);
