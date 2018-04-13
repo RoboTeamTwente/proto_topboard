@@ -11,6 +11,10 @@
 
 #include <inttypes.h>
 
+#define ROBOPKTLEN 13 //amount of bytes for a packet sent to the robot
+#define SHORTACKPKTLEN 11 //amount of bytes of an ACK packet sent by the robot without using the extra/debug fields
+#define FULLACKPKTLEN 23 //ACK packet with debug fields
+
 /*
  * A data struct which is easy to work with
  * when accessing variables.
@@ -63,10 +67,10 @@ typedef struct roboAckData{
 } roboAckData;
 
 
-void robotDataToPacket(roboData *input, uint8_t output[13]);
-void packetToRoboData(uint8_t input[13], roboData *output);
-void roboAckDataToPacket(roboAckData *input, uint8_t output[23]);
-void ackPacketToRoboAckData(uint8_t input[23], uint8_t packetlength, roboAckData *output);
+void robotDataToPacket(roboData *input, uint8_t output[ROBOPKTLEN]);
+void packetToRoboData(uint8_t input[ROBOPKTLEN], roboData *output);
+void roboAckDataToPacket(roboAckData *input, uint8_t output[FULLACKPKTLEN]);
+void ackPacketToRoboAckData(uint8_t input[FULLACKPKTLEN], uint8_t packetlength, roboAckData *output);
 
 
 #endif /* PACKING_H_ */

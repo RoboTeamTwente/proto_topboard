@@ -7,12 +7,6 @@
 
 #include "packing.h"
 #include <stdio.h>
-#include <string.h> //we actually need that for memcpy -- not for strings or anything
-/*
- * A new packet format
- * (not yet documented)
- * */
-
 
 /*
  * Convert a struct with roboData to a Bytearray, which can be transmitted by the nRF module.
@@ -20,7 +14,7 @@
  * In the final version, the computer already sends a read-to-transmit byte array.
  *
  */
-void robotDataToPacket(roboData *input, uint8_t output[13]) {
+void robotDataToPacket(roboData *input, uint8_t output[ROBOPKTLEN]) {
 
 	output[0] = (uint8_t) (  							// aaaaabbb
 		(0b11111000 & (input->id << 3))                  // aaaaa000   5 bits; bits  4-0 to 7-3
@@ -89,7 +83,7 @@ void robotDataToPacket(roboData *input, uint8_t output[13]) {
  * Create a roboData structure from a given Bytearray.
  * This is used by the robot to convert a received nRF packet into a struct with named variables.
  */
-void packetToRoboData(uint8_t input[13], roboData *output) {
+void packetToRoboData(uint8_t input[ROBOPKTLEN], roboData *output) {
 	/*
 	output[0] aaaaabbb
 	output[1] bbbbbbbb
@@ -197,7 +191,7 @@ void packetToRoboData(uint8_t input[13], roboData *output) {
  * The result can be used as an ACK payload to transmit it over air.
  */
 
-void roboAckDataToPacket(roboAckData *input, uint8_t output[23]) {
+void roboAckDataToPacket(roboAckData *input, uint8_t output[FULLACKPKTLEN]) {
 	output[0]  = (uint8_t) ((input->roboID)<<3); //a
 	output[0] |= (uint8_t) ((input->wheelLeftFront)<<2); //b
 	output[0] |= (uint8_t) ((input->wheelRightFront)<<1); //c
@@ -286,7 +280,7 @@ void ackPacketToRoboAckData(uint8_t input[23], uint8_t packetlength, roboAckData
 
 	output->ballSensor = input[10]&0x7f; //s
 
-	if(packetlength < 23)
+	if(packetlength < FULLACKPKTLEN)
 		return;
 
 	//extra data
