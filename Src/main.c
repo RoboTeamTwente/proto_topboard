@@ -110,13 +110,12 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   //setup code for using the nRF24 module
-  uint8_t robotID = ReadAddress(); //usually that should be the RobotID
+  uint8_t myRoboID = ReadAddress(); //usually that should be the RobotID
   nrf24nssHigh(); //I think we need that, but I can't really say, yet, why we would need to call low-level functions in main()
 
-  while(initRobo(&hspi2, RADIO_CHANNEL, robotID) != 0) {
+  while(initRobo(&hspi2, RADIO_CHANNEL, myRoboID) != 0) {
 	  uprintf("Error while initializing nRF wireless module. Check connections.\n");
   }
-  dataPacket dataStruct;
 
   /* USER CODE END 2 */
 
@@ -149,20 +148,20 @@ int main(void)
 	  if(irqRead()){
 		  //some debug outputs about interrupt flags
 		  uint8_t status_reg = readReg(STATUS);
-		  uint8_t rx_dr = (status_reg & RX_DR) > 0;
+		  //uint8_t rx_dr = (status_reg & RX_DR) > 0;
 		  uint8_t tx_ds = (status_reg & TX_DS) > 0;
-		  uint8_t max_rt = (status_reg & MAX_RT) > 0;
+		  //uint8_t max_rt = (status_reg & MAX_RT) > 0;
 		  uint8_t tx_full = (status_reg & STATUS_TX_FULL) > 0;
 
 		  if(tx_ds) {
 			  //uprintf("ACK payload delivered. Clearing TX_DS!\n");
-			  writeReg(STATUS, TX_DS);
+			  writeReg(STATUS, TX_DS); //clearing TX_DS interrupt (ACK sent)
 		  } else {
 
 			  //uprintf("Interrupts: rx_dr: %i, tx_ds: %i, max_rt: %i, tx_full: %i    ", rx_dr, tx_ds, max_rt, tx_full);
 
 			  //handle interrupts and incoming packets
-			  roboCallback(&dataStruct);
+			  roboCallback();
 
 			  if(tx_full) {
 				  //uprintf("TX FIFO is full. Flushing buffer...\n");
@@ -170,6 +169,16 @@ int main(void)
 			  }
 		  }
 	  }
+
+	  /*
+	   *  here you can read from "roboData receivedRoboData"
+	   *  and write to "roboAckData preparedAckData"
+	   */
+	  preparedAckData.roboID = myRoboID;
+	  //pollingSomeSensors(&preparedAckData);
+	  //whatDoIneedToDo(&receivedRoboData);
+
+
 	  /* END nRF24 polling */
 
 
@@ -313,7 +322,7 @@ void HandleCommand(char * input){
 		uprintf("help -- Prints this help message\n");
 		uprintf("start -- Not implemented\n");
 		uprintf("address -- Prints the address as read from the DIP switches on the board.\n");
-		uprintf("reg -- Print the values of some registers. Call Swithout Parameters.\n");
+		uprintf("reg -- Print the values of the nRF registers\n");
 		uprintf("(this list may be incomplete)\n");
 	}
 }
