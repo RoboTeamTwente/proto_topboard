@@ -10,7 +10,7 @@
  */
 
 #include <roboNRF24.h>
-//#include "PuttyInterface/PuttyInterface.h" //should be removed after debugging
+#include "PuttyInterface/PuttyInterface.h" //should be removed after debugging
 
 int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboID){
 	/*
@@ -69,7 +69,7 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
  *
  */
 void roboCallback(){
-	uint8_t verbose = 0;
+	uint8_t verbose = 1;
 	uint8_t dataArray[32];
 
 
@@ -82,10 +82,10 @@ void roboCallback(){
 	//check on which pipe number the new packet arrived
 	uint8_t dataPipeNo = (status_reg >> 1) & 0b111; //reading RX_P_NO
 
-	//if(verbose) uprintf("New packet on Pipe Number: %i   ", dataPipeNo);
+	if(verbose) uprintf("New packet on Pipe Number: %i   ", dataPipeNo);
 
 	uint8_t bytesReceived = getDynamicPayloadLength();
-	//if(verbose) uprintf("with payload length: %i Bytes  --  ", bytesReceived);
+	if(verbose) uprintf("with payload length: %i Bytes  --  ", bytesReceived);
 
 	/*
 	 * Put that into a readPayload() function ?
@@ -101,21 +101,21 @@ void roboCallback(){
 	writeReg(STATUS, RX_DR);
 	nrf24ceHigh();
 
-	/*
+
 	if(verbose) {
-		uprintf("Raw packet data in DEC: ");
+		uprintf("Raw packet data in DEC: \n");
 		for(int i=0; i<bytesReceived; i++) {
 			uprintf("%i ", dataArray[i]);
 		}
 		uprintf("\n");
 
-		uprintf("Raw packet data in HEX: ");
+		uprintf("Raw packet data in HEX: \n");
 		for(int i=0; i<bytesReceived; i++) {
 			uprintf("%02x ", dataArray[i]);
 		}
 		uprintf("\n");
 	}
-	*/
+
 
 	flushRX();
 
@@ -128,11 +128,11 @@ void roboCallback(){
 	if(receivedRoboData.debug_info)
 		ackDataLength = 23; //adding xsense data
 	if(writeACKpayload(byteArray, ackDataLength, dataPipeNo) != 0) { //eat this, basestation!
-		//if(verbose) uprintf("Error writing ACK payload. TX FIFO full?\n");
+		if(verbose) uprintf("Error writing ACK payload. TX FIFO full?\n");
 		return;
 	} else {
 		if(verbose) {
-			//uprintf("ACK payload written.");
+			uprintf("ACK payload written.\n");
 		}
 	}
 

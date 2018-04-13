@@ -148,23 +148,23 @@ int main(void)
 	  if(irqRead()){
 		  //some debug outputs about interrupt flags
 		  uint8_t status_reg = readReg(STATUS);
-		  //uint8_t rx_dr = (status_reg & RX_DR) > 0;
+		  uint8_t rx_dr = (status_reg & RX_DR) > 0;
 		  uint8_t tx_ds = (status_reg & TX_DS) > 0;
-		  //uint8_t max_rt = (status_reg & MAX_RT) > 0;
+		  uint8_t max_rt = (status_reg & MAX_RT) > 0;
 		  uint8_t tx_full = (status_reg & STATUS_TX_FULL) > 0;
 
 		  if(tx_ds) {
-			  //uprintf("ACK payload delivered. Clearing TX_DS!\n");
+			  uprintf("ACK payload delivered. Clearing TX_DS!\n");
 			  writeReg(STATUS, TX_DS); //clearing TX_DS interrupt (ACK sent)
 		  } else {
 
-			  //uprintf("Interrupts: rx_dr: %i, tx_ds: %i, max_rt: %i, tx_full: %i    ", rx_dr, tx_ds, max_rt, tx_full);
+			  uprintf("Interrupts: rx_dr: %i, tx_ds: %i, max_rt: %i, tx_full: %i    ", rx_dr, tx_ds, max_rt, tx_full);
 
 			  //handle interrupts and incoming packets
 			  roboCallback();
 
 			  if(tx_full) {
-				  //uprintf("TX FIFO is full. Flushing buffer...\n");
+				  uprintf("TX FIFO is full. Flushing buffer...\n");
 				  flushTX();
 			  }
 		  }
