@@ -152,13 +152,20 @@ int main(void)
 		  uint8_t tx_ds = (status_reg & TX_DS) > 0;
 		  uint8_t max_rt = (status_reg & MAX_RT) > 0;
 		  uint8_t tx_full = (status_reg & STATUS_TX_FULL) > 0;
+		  uprintf("Interrupt fired: rx_dr: %i, tx_ds: %i, max_rt: %i, tx_full: %i    ", rx_dr, tx_ds, max_rt, tx_full);
+
+		  if((rx_dr | tx_ds | max_rt | tx_full) == 0) {
+			  uprintf("The IRQ pin announced an interrupt, but the status register doesn't flag an interrupt. Ignoring Interrupt.\n");
+			  //HAL_Delay(1);
+			  continue;
+		  }
 
 		  if(tx_ds) {
 			  uprintf("ACK payload delivered. Clearing TX_DS!\n");
 			  writeReg(STATUS, TX_DS); //clearing TX_DS interrupt (ACK sent)
+			  HAL_Delay(1);
 		  } else {
 
-			  uprintf("Interrupts: rx_dr: %i, tx_ds: %i, max_rt: %i, tx_full: %i    ", rx_dr, tx_ds, max_rt, tx_full);
 
 			  //handle interrupts and incoming packets
 			  roboCallback();

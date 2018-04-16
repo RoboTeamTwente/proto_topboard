@@ -76,30 +76,51 @@ void roboCallback(){
 	uint8_t status_reg = readReg(STATUS);
 	if( (status_reg & RX_DR) == 0) {
 		//if no packet arrived, abort
+		uprintf("Robocallback: no RX_DR. Returning to main.\n");
 		return;
 	}
 
 	//check on which pipe number the new packet arrived
+	//TODO: this should be in the nRF library
 	uint8_t dataPipeNo = (status_reg >> 1) & 0b111; //reading RX_P_NO
+	//TODO: those magic numbers should be globally defined... 7: RX FIFO Empty. 6: "Not Used".
+	if(dataPipeNo == 7) {
+		uprintf("RX FIFO Empty.\n");
+		uprintf("Clearing RX_DR Interrupt and returning to main.\n");
+		writeReg(STATUS, RX_DR);
+		return;
+	} else if (dataPipeNo == 6) {
+		uprintf("STATUS Register: RX_P_NO not used. Check the Datasheet and your nRF init code. Error with EN_RXADDR?\n");
+		uprintf("Clearing RX_DR Interrupt and returning to main.\n");
+		writeReg(STATUS, RX_DR);
+		return;
+	}
 
 	if(verbose) uprintf("New packet on Pipe Number: %i   ", dataPipeNo);
 
 	uint8_t bytesReceived = getDynamicPayloadLength();
 	if(verbose) uprintf("with payload length: %i Bytes  --  ", bytesReceived);
 
+	if(bytesReceived > 13) {
+		uprintf("Payload too long. Doesn't look legit. Flushing RX buffer..\n");
+		flushRX();
+		return;
+	}
 	/*
 	 * Put that into a readPayload() function ?
 	 */
 	nrf24ceLow();
 	//actually reading the payload
 	readData(dataArray, bytesReceived);
+	flushRX();
 
+	uprintf("Data was read and RX buffer flushed.\n");
 	//putting the new data from the packet on the struct
 	packetToRoboData(dataArray, &receivedRoboData);
 	//clear RX interrupt
 	//if(verbose) uprintf("Clearing RX_DR interrupt.\n");
 	writeReg(STATUS, RX_DR);
-	nrf24ceHigh();
+	//nrf24ceHigh();
 
 
 	if(verbose) {
@@ -117,7 +138,6 @@ void roboCallback(){
 	}
 
 
-	flushRX();
 
 
 
@@ -132,7 +152,8 @@ void roboCallback(){
 		return;
 	} else {
 		if(verbose) {
-			uprintf("ACK payload written.\n");
+			uprintf("ACK payload written with %i Bytes.\n", ackDataLength);
+			HAL_Delay(1);
 		}
 	}
 
