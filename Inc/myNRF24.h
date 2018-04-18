@@ -111,6 +111,9 @@ void enableAutoRetransmitSlow();
 //on a datapipe with DPL (Dynamic Payload Length)
 uint8_t getDynamicPayloadLength();
 
+//send SPI NOP command
+void nrfNOP();
+
 //returns the payload length of a received packet for data pipes
 //which don't use DPL (dynamic payload length)
 uint8_t getStaticPayloadLength(uint8_t dataPipeNo);

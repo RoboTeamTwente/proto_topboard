@@ -346,6 +346,7 @@ void sendData(uint8_t data[], uint8_t length){
 //     Afaik, you also need to use it in TX mode when you want to read an ACK payload
 void readData(uint8_t* receiveBuffer, uint8_t length){
 	nssLow();
+	HAL_Delay(1);
 	uint8_t command = NRF_R_RX_PAYLOAD;
 	HAL_SPI_Transmit(spiHandle, &command, 1, 100);
 	HAL_SPI_Receive(spiHandle, receiveBuffer, length, 100);
@@ -401,6 +402,16 @@ uint8_t getDynamicPayloadLength() {
 	return bytesReceived;
 }
 
+//Transmit the SPI command "NOP" (No Operation) to the nRF module.
+//This command does not have any particular use.
+//Actually, as a side effect it would return the value of the STATUS register.. but I'm not saving the result.
+void nrfNOP() {
+	nssLow();
+	uint8_t command = NRF_NOP;
+	HAL_SPI_Transmit(spiHandle, &command, 1, 100);
+	nssHigh();
+}
+
 //returns the payload length of a received packet for data pipes
 //which don't use DPL (dynamic payload length)
 uint8_t getStaticPayloadLength(uint8_t dataPipeNo) {
@@ -418,12 +429,15 @@ int8_t writeACKpayload(uint8_t* payloadBytes, uint8_t payload_length, uint8_t pi
 
 	//you may want to call writeACKpayload() in the procedure which reads a packet
 
+	if(pipeNo > 5)
+		return -1; //invalid pipe!
 
 	if(readReg(FIFO_STATUS) & FIFO_STATUS_TX_FULL) {
 		//flushTX(); //will ensure that we don't overflow with 3 ACK packets or more
 		return -1; //error: FIFO full
 	}
 
+	ceLow();
 	nssLow();
 
 	uint8_t spi_command = NRF_W_ACK_PAYLOAD | pipeNo;
@@ -436,6 +450,7 @@ int8_t writeACKpayload(uint8_t* payloadBytes, uint8_t payload_length, uint8_t pi
 		return -1; //HAL/SPI error
 
 	nssHigh();
+	ceHigh();
 
 	return 0; //success
 }

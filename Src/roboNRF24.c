@@ -10,7 +10,7 @@
  */
 
 #include <roboNRF24.h>
-//#include "PuttyInterface/PuttyInterface.h" //should be removed after debugging
+#include "PuttyInterface/PuttyInterface.h" //should be removed after debugging
 
 int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboID){
 	/*
@@ -52,13 +52,32 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
 	//enable dynamic packet length for data pipe(s)
 	writeReg(DYNPD, DPL_P1);
 
+	//writeReg(RX_PW_P1, 32); //set static payload length........ SHOULD NOT BE NEEDED
+
 	//go to RX mode and start listening
 	powerUpRX();
 
 	//preparing a dummy-payload which will be sent
 	//when the very first packet was received
-	uint8_t dummyvalue = 0x33;
-	writeACKpayload(&dummyvalue, 1, 1);
+	uint8_t dummyvalues[32];
+	//cold food means: we just booted up
+	dummyvalues[0] = 0xc0;
+	dummyvalues[1] = 0x1d;
+	dummyvalues[2] = 0xf0;
+	dummyvalues[3] = 0x0d;
+	dummyvalues[4] = 0x31;
+	dummyvalues[5] = 0x41;
+	dummyvalues[6] = 0x59;
+
+	int8_t error = writeACKpayload(dummyvalues, 7, 1);
+	uprintf("writeACKpayload() returned %i\n", error);
+	//error = writeACKpayload(dummyvalues, 32, 1);
+	//uprintf("writeACKpayload() returned %i\n", error);
+	//writeACKpayload(dummyvalues, 32, 1);
+
+	//for(uint8_t i=0; i< 32; i++)
+	//	nrfNOP();
+
 	return 0;
 }
 /*
@@ -69,7 +88,7 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
  *
  */
 void roboCallback(){
-	uint8_t verbose = 0;
+	uint8_t verbose = 1;
 	uint8_t dataArray[32];
 
 
@@ -82,10 +101,10 @@ void roboCallback(){
 	//check on which pipe number the new packet arrived
 	uint8_t dataPipeNo = (status_reg >> 1) & 0b111; //reading RX_P_NO
 
-	//if(verbose) uprintf("New packet on Pipe Number: %i   ", dataPipeNo);
+	if(verbose) uprintf("New packet on Pipe Number: %i   ", dataPipeNo);
 
 	uint8_t bytesReceived = getDynamicPayloadLength();
-	//if(verbose) uprintf("with payload length: %i Bytes  --  ", bytesReceived);
+	if(verbose) uprintf("with payload length: %i Bytes  --  ", bytesReceived);
 
 	/*
 	 * Put that into a readPayload() function ?
@@ -97,11 +116,11 @@ void roboCallback(){
 	//putting the new data from the packet on the struct
 	packetToRoboData(dataArray, &receivedRoboData);
 	//clear RX interrupt
-	//if(verbose) uprintf("Clearing RX_DR interrupt.\n");
+	if(verbose) uprintf("Clearing RX_DR interrupt.\n");
 	writeReg(STATUS, RX_DR);
 	nrf24ceHigh();
 
-	/*
+
 	if(verbose) {
 		uprintf("Raw packet data in DEC: ");
 		for(int i=0; i<bytesReceived; i++) {
@@ -115,7 +134,7 @@ void roboCallback(){
 		}
 		uprintf("\n");
 	}
-	*/
+
 
 	flushRX();
 
@@ -128,11 +147,11 @@ void roboCallback(){
 	if(receivedRoboData.debug_info)
 		ackDataLength = 23; //adding xsense data
 	if(writeACKpayload(byteArray, ackDataLength, dataPipeNo) != 0) { //eat this, basestation!
-		//if(verbose) uprintf("Error writing ACK payload. TX FIFO full?\n");
+		if(verbose) uprintf("Error writing ACK payload. TX FIFO full?\n");
 		return;
 	} else {
 		if(verbose) {
-			//uprintf("ACK payload written.");
+			uprintf("ACK payload written.");
 		}
 	}
 
