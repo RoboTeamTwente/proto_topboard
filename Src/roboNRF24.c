@@ -64,7 +64,7 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
 	dummyvalues[0] = 0xc0;
 	dummyvalues[1] = 0x1d;
 	dummyvalues[2] = 0xf0;
-	dummyvalues[3] = 0x0d;
+	dummyvalues[3] = 0xaa;
 	dummyvalues[4] = 0x31;
 	dummyvalues[5] = 0x41;
 	dummyvalues[6] = 0x59;

@@ -132,7 +132,7 @@ int main(void)
   HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, 1);
   //HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, 0);
 //  HAL_GPIO_WritePin(LED4_GPIO_Port, LED4_Pin, 0);
-  uint8_t verbose = 1;
+  //uint8_t verbose = 1;
   while(1) {
 	    uint8_t bytesReceived;
 	    uint8_t dataArray[200];
@@ -140,11 +140,6 @@ int main(void)
 
 	    uprintf("\n");
 		uint8_t status_reg = readReg(STATUS);
-		readReg(STATUS);
-		readReg(STATUS);
-		readReg(STATUS);
-		readReg(STATUS);
-		readReg(STATUS);
 		uprintf("STATUS: 0x%02x ( ", status_reg);
 		if(status_reg & RX_DR) uprintf("RX_DR ");
 		if(status_reg & TX_DS) uprintf("TX_DS ");
@@ -157,27 +152,18 @@ int main(void)
 		uprintf(")   ");
 
 	    bytesReceived = getDynamicPayloadLength();
+
 		//if(status_reg & RX_DR) {
 		{
 			uprintf("DynPayloadLen: %i (0x%02x)  ", bytesReceived, bytesReceived);
-			//flushRX();
+
 			bytesReceived = 32;
-			HAL_Delay(10);
 			readData(dataArray, bytesReceived);
-			writeReg(STATUS, RX_DR);
+			//writeReg(STATUS, RX_DR);
 
-			if(verbose) {
-				//uprintf("Raw packet data in DEC: ");
-				//for(int i=0; i<bytesReceived; i++) {
-				//	uprintf("%i ", dataArray[i]);
-				//}
-				//uprintf("\n");
-
-				uprintf("Raw packet data in HEX: ");
-				for(int i=0; i<bytesReceived; i++) {
-					uprintf("%02x ", dataArray[i]);
-				}
-				//uprintf("\n");
+			uprintf("Raw packet data in HEX: ");
+			for(int i=0; i<bytesReceived; i++) {
+				uprintf("%02x ", dataArray[i]);
 			}
 		}
 
