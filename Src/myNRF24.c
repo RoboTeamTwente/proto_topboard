@@ -346,9 +346,10 @@ void sendData(uint8_t data[], uint8_t length){
 //     Afaik, you also need to use it in TX mode when you want to read an ACK payload
 void readData(uint8_t* receiveBuffer, uint8_t length){
 	nssLow();
-	HAL_Delay(1);
+	HAL_Delay(10);
 	uint8_t command = NRF_R_RX_PAYLOAD;
 	HAL_SPI_Transmit(spiHandle, &command, 1, 100);
+	HAL_Delay(10);
 	HAL_SPI_Receive(spiHandle, receiveBuffer, length, 100);
 	nssHigh();
 }
@@ -432,12 +433,12 @@ int8_t writeACKpayload(uint8_t* payloadBytes, uint8_t payload_length, uint8_t pi
 	if(pipeNo > 5)
 		return -1; //invalid pipe!
 
-	if(readReg(FIFO_STATUS) & FIFO_STATUS_TX_FULL) {
+	//if(readReg(FIFO_STATUS) & FIFO_STATUS_TX_FULL) {
 		//flushTX(); //will ensure that we don't overflow with 3 ACK packets or more
-		return -1; //error: FIFO full
-	}
+		//return -1; //error: FIFO full
+	//}
 
-	ceLow();
+	//ceLow();
 	nssLow();
 
 	uint8_t spi_command = NRF_W_ACK_PAYLOAD | pipeNo;
@@ -446,11 +447,17 @@ int8_t writeACKpayload(uint8_t* payloadBytes, uint8_t payload_length, uint8_t pi
 		return -1; //HAL/SPI error
 
 	//transmit values for spi command (send payload to nRF module)
-	if(HAL_SPI_Transmit(spiHandle, payloadBytes, payload_length, 100) != HAL_OK)
+	uint8_t dummybytes[4];
+	dummybytes[0] = 0x01;
+	dummybytes[1] = 0x02;
+	dummybytes[2] = 0x03;
+	dummybytes[3] = 0x04;
+	uint8_t dummylen = 4;
+	if(HAL_SPI_Transmit(spiHandle, dummybytes, dummylen, 100) != HAL_OK)
 		return -1; //HAL/SPI error
 
 	nssHigh();
-	ceHigh();
+	//ceHigh();
 
 	return 0; //success
 }

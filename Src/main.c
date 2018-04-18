@@ -134,38 +134,66 @@ int main(void)
 //  HAL_GPIO_WritePin(LED4_GPIO_Port, LED4_Pin, 0);
   //uint8_t verbose = 1;
   while(1) {
-	    uint8_t bytesReceived;
+	    uint8_t bytesReceived=0;
 	    uint8_t dataArray[200];
 
 
 	    uprintf("\n");
-		uint8_t status_reg = readReg(STATUS);
-		uprintf("STATUS: 0x%02x ( ", status_reg);
-		if(status_reg & RX_DR) uprintf("RX_DR ");
-		if(status_reg & TX_DS) uprintf("TX_DS ");
-		if(status_reg & MAX_RT) uprintf("MAX_RT ");
-		uint8_t pipeNo = (status_reg >> 1)&7;
-		if(pipeNo >= 0 && pipeNo <= 0b101) uprintf("PIPE:%i ", pipeNo);
-		if(pipeNo == 0b110) uprintf("RX_FIFO:not_used ");
-		if(pipeNo == 0b111) uprintf("RX_FIFO:empty ");
-		if(status_reg & STATUS_TX_FULL) uprintf("TX_FULL ");
-		uprintf(")   ");
+		uint8_t status_reg;
+		uint8_t pipeNo;
 
-	    bytesReceived = getDynamicPayloadLength();
+		nrfNOP();
+		nrfNOP();
+		nrfNOP();
+		for(uint8_t i=0; i<1; i++) {
+			status_reg = readReg(STATUS);
+			uprintf("STATUS: 0x%02x ( ", status_reg);
+			if(status_reg & RX_DR) uprintf("RX_DR ");
+			if(status_reg & TX_DS) uprintf("TX_DS ");
+			if(status_reg & MAX_RT) uprintf("MAX_RT ");
+			pipeNo = (status_reg >> 1)&7;
+			if(pipeNo >= 0 && pipeNo <= 0b101) uprintf("PIPE:%i ", pipeNo);
+			if(pipeNo == 0b110) uprintf("RX_FIFO:not_used ");
+			if(pipeNo == 0b111) uprintf("RX_FIFO:empty ");
+			if(status_reg & STATUS_TX_FULL) uprintf("TX_FULL ");
+			uprintf(")   ");
+		}
+		if(status_reg & RX_DR) {
+			ceLow();
+		}
 
-		//if(status_reg & RX_DR) {
-		{
+		//uprintf("\n");
+		nrfNOP();
+		nrfNOP();
+		nrfNOP();
+
+		for(uint8_t i=0; i<1; i++) {
+			bytesReceived = getDynamicPayloadLength();
 			uprintf("DynPayloadLen: %i (0x%02x)  ", bytesReceived, bytesReceived);
+		}
+		//uprintf("\n");
+		nrfNOP();
+		nrfNOP();
+		nrfNOP();
+
+		//if(status_reg & RX_DR)
+		if(true)
+		{
 
 			bytesReceived = 32;
 			readData(dataArray, bytesReceived);
-			//writeReg(STATUS, RX_DR);
+			writeReg(STATUS, RX_DR);
 
 			uprintf("Raw packet data in HEX: ");
 			for(int i=0; i<bytesReceived; i++) {
 				uprintf("%02x ", dataArray[i]);
 			}
 		}
+
+		nrfNOP();
+		nrfNOP();
+		nrfNOP();
+		//uprintf("\n");
 
 	  HAL_Delay(500);
   }
