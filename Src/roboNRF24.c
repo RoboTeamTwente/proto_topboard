@@ -61,7 +61,7 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
 	//when the very first packet was received
 	uint8_t dummyvalues[32];
 	//cold food means: we just booted up
-	dummyvalues[0] = 0xc0;
+	dummyvalues[0] = 0x01;
 	dummyvalues[1] = 0x1d;
 	dummyvalues[2] = 0xf0;
 	dummyvalues[3] = 0xaa;
@@ -69,7 +69,7 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
 	dummyvalues[5] = 0x41;
 	dummyvalues[6] = 0x59;
 
-	int8_t error = writeACKpayload(dummyvalues, 7, 1);
+	int8_t error = writeACKpayload(dummyvalues, 1, 1);
 	uprintf("writeACKpayload() returned %i\n", error);
 	//error = writeACKpayload(dummyvalues, 32, 1);
 	//uprintf("writeACKpayload() returned %i\n", error);
@@ -77,6 +77,14 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
 
 	//for(uint8_t i=0; i< 32; i++)
 	//	nrfNOP();
+
+
+
+
+
+	//go to RX mode and start listening
+	powerUpRX();
+
 
 	return 0;
 }

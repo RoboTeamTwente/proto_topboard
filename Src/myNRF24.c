@@ -446,17 +446,18 @@ int8_t writeACKpayload(uint8_t* payloadBytes, uint8_t payload_length, uint8_t pi
 	if(HAL_SPI_Transmit(spiHandle, &spi_command,1, 100) != HAL_OK)
 		return -1; //HAL/SPI error
 
-	//transmit values for spi command (send payload to nRF module)
-	uint8_t dummybytes[4];
-	dummybytes[0] = 0x01;
-	dummybytes[1] = 0x02;
-	dummybytes[2] = 0x03;
-	dummybytes[3] = 0x04;
-	uint8_t dummylen = 4;
-	if(HAL_SPI_Transmit(spiHandle, dummybytes, dummylen, 100) != HAL_OK)
+
+	if(HAL_SPI_Transmit(spiHandle, payloadBytes, payload_length, 100) != HAL_OK)
 		return -1; //HAL/SPI error
 
 	nssHigh();
+
+	/*
+	HAL_Delay(1);
+	nrfNOP();
+	nrfNOP();
+	nrfNOP();
+	*/
 	//ceHigh();
 
 	return 0; //success
