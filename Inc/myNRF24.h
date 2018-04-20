@@ -10,11 +10,6 @@
 #ifndef MYNRF24_H_
 #define MYNRF24_H_
 
-//#define PI 3.14159
-
-//#include "TextOut.h"
-//#include "gpio.h"
-//#include "stm32f3xx_hal.h"
 #include "spi.h"
 #include <inttypes.h>
 
@@ -35,6 +30,10 @@ void softResetRegisters();
 
 //read the status register
 int8_t getStatusReg();
+
+
+//how many retransmissions did it take for the last packet to be delivered?
+uint8_t getRetransmissionCount();
 
 //set the address you will send to
 int8_t setTXaddress(uint8_t address[5]);
@@ -126,7 +125,7 @@ int8_t writeACKpayload(uint8_t* payloadBytes, uint8_t payload_length, uint8_t pi
 //if there is data, it will be stored in the given ack_payload array
 //returns 1 when there is a payload
 //on error, returns 0, -1 or -2.
-int8_t getAck(uint8_t* ack_payload);
+int8_t getAck(uint8_t* ack_payload, uint8_t* payload_length);
 
 
 #endif /* MYNRF24_H_ */
