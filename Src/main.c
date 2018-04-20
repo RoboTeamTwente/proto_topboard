@@ -1,40 +1,40 @@
 /**
-  ******************************************************************************
-  * File Name          : main.c
-  * Description        : Main program body
-  ******************************************************************************
-  ** This notice applies to any and all portions of this file
-  * that are not between comment pairs USER CODE BEGIN and
-  * USER CODE END. Other portions of this file, whether 
-  * inserted by the user or by software development tools
-  * are owned by their respective copyright owners.
-  *
-  * COPYRIGHT(c) 2018 STMicroelectronics
-  *
-  * Redistribution and use in source and binary forms, with or without modification,
-  * are permitted provided that the following conditions are met:
-  *   1. Redistributions of source code must retain the above copyright notice,
-  *      this list of conditions and the following disclaimer.
-  *   2. Redistributions in binary form must reproduce the above copyright notice,
-  *      this list of conditions and the following disclaimer in the documentation
-  *      and/or other materials provided with the distribution.
-  *   3. Neither the name of STMicroelectronics nor the names of its contributors
-  *      may be used to endorse or promote products derived from this software
-  *      without specific prior written permission.
-  *
-  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-  * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * File Name          : main.c
+ * Description        : Main program body
+ ******************************************************************************
+ ** This notice applies to any and all portions of this file
+ * that are not between comment pairs USER CODE BEGIN and
+ * USER CODE END. Other portions of this file, whether
+ * inserted by the user or by software development tools
+ * are owned by their respective copyright owners.
+ *
+ * COPYRIGHT(c) 2018 STMicroelectronics
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *   1. Redistributions of source code must retain the above copyright notice,
+ *      this list of conditions and the following disclaimer.
+ *   2. Redistributions in binary form must reproduce the above copyright notice,
+ *      this list of conditions and the following disclaimer in the documentation
+ *      and/or other materials provided with the distribution.
+ *   3. Neither the name of STMicroelectronics nor the names of its contributors
+ *      may be used to endorse or promote products derived from this software
+ *      without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ ******************************************************************************
+ */
 /* Includes ------------------------------------------------------------------*/
 #include <roboNRF24.h>
 #include "main.h"
@@ -80,74 +80,74 @@ int ReadAddress();
 int main(void)
 {
 
-  /* USER CODE BEGIN 1 */
+	/* USER CODE BEGIN 1 */
 
-  /* USER CODE END 1 */
+	/* USER CODE END 1 */
 
-  /* MCU Configuration----------------------------------------------------------*/
+	/* MCU Configuration----------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+	HAL_Init();
 
-  /* USER CODE BEGIN Init */
+	/* USER CODE BEGIN Init */
 
-  /* USER CODE END Init */
+	/* USER CODE END Init */
 
-  /* Configure the system clock */
-  SystemClock_Config();
+	/* Configure the system clock */
+	SystemClock_Config();
 
-  /* USER CODE BEGIN SysInit */
+	/* USER CODE BEGIN SysInit */
 
-  /* USER CODE END SysInit */
+	/* USER CODE END SysInit */
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_SPI2_Init();
-  MX_SPI3_Init();
-  MX_USART1_UART_Init();
-  MX_TIM1_Init();
+	/* Initialize all configured peripherals */
+	MX_GPIO_Init();
+	MX_SPI2_Init();
+	MX_SPI3_Init();
+	MX_USART1_UART_Init();
+	MX_TIM1_Init();
 
-  /* USER CODE BEGIN 2 */
+	/* USER CODE BEGIN 2 */
 
-  //setup code for using the nRF24 module
-  uint8_t myRoboID = ReadAddress(); //usually that should be the RobotID
-  nrf24nssHigh(); //I think we need that, but I can't really say, yet, why we would need to call low-level functions in main()
+	//setup code for using the nRF24 module
+	uint8_t myRoboID = ReadAddress(); //usually that should be the RobotID
+	nrf24nssHigh(); //I think we need that, but I can't really say, yet, why we would need to call low-level functions in main()
 
-  while(initRobo(&hspi2, RADIO_CHANNEL, myRoboID) != 0) {
-	  uprintf("Error while initializing nRF wireless module. Check connections.\n");
-  }
+	while(initRobo(&hspi2, RADIO_CHANNEL, myRoboID) != 0) {
+		uprintf("Error while initializing nRF wireless module. Check connections.\n");
+	}
 
-  /* USER CODE END 2 */
+	/* USER CODE END 2 */
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  char * startmessage = "---------------------\n\r";
-  uprintf(startmessage);
-  uprintf("Build: %s %s\n", __DATE__, __TIME__);
+	/* Infinite loop */
+	/* USER CODE BEGIN WHILE */
+	char * startmessage = "---------------------\n\r";
+	uprintf(startmessage);
+	uprintf("Build: %s %s\n", __DATE__, __TIME__);
 
-  HAL_UART_Receive_IT(&huart1, rec_buf, 1); //This is needed for debugging input/output on serial
+	HAL_UART_Receive_IT(&huart1, rec_buf, 1); //This is needed for debugging input/output on serial
 
-  //int tick = 0;
-  HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
-  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, 1);
-  //HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, 0);
-//  HAL_GPIO_WritePin(LED4_GPIO_Port, LED4_Pin, 0);
-  //uint8_t verbose = 1;
+	//int tick = 0;
+	HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
+	HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, 1);
+	//HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, 0);
+	//  HAL_GPIO_WritePin(LED4_GPIO_Port, LED4_Pin, 0);
+	//uint8_t verbose = 1;
 
-  uint8_t bytesToSend = 2;
+	uint8_t bytesToSend = 2;
 
 	uint8_t dummyvalues[32];
 
 	for(uint8_t i=0; i<32; i++)
 		dummyvalues[i] = i+1;
 
-  uint8_t status_reg;
-  while(1) {
-	    uint8_t bytesReceived=0;
-	    uint8_t dataArray[200];
+	uint8_t status_reg;
+	while(1) {
+		uint8_t bytesReceived=0;
+		uint8_t dataArray[200];
 
 
-	    uprintf("\n");
+		uprintf("\n");
 
 		status_reg = readReg(STATUS);
 
@@ -210,120 +210,120 @@ int main(void)
 			HAL_Delay(500);
 		}
 
-	  //HAL_Delay(500);
-  }
+		//HAL_Delay(500);
+	}
 
-  while (1)
-  {
-	  //HAL_Delay(10); //10ms delay
-	  if(huart2_Rx_flag){
-		  //handle debug input/output over UART (connect an ST-Link to it for easy debugging over USB)
-		  huart2_Rx_flag = false;
-		  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED3_Pin);
-		  HandlePcInput(&small_buf, 1, HandleCommand);
-		  HAL_UART_Receive_IT(&huart1, rec_buf, 1);
-		  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED3_Pin);
-	  }
+	while (1)
+	{
+		//HAL_Delay(10); //10ms delay
+		if(huart2_Rx_flag){
+			//handle debug input/output over UART (connect an ST-Link to it for easy debugging over USB)
+			huart2_Rx_flag = false;
+			HAL_GPIO_TogglePin(LED1_GPIO_Port, LED3_Pin);
+			HandlePcInput(&small_buf, 1, HandleCommand);
+			HAL_UART_Receive_IT(&huart1, rec_buf, 1);
+			HAL_GPIO_TogglePin(LED1_GPIO_Port, LED3_Pin);
+		}
 
-	  if(irqRead()){
-		  //some debug outputs about interrupt flags
-		  uint8_t status_reg = readReg(STATUS);
-		  //uint8_t rx_dr = (status_reg & RX_DR) > 0;
-		  uint8_t tx_ds = (status_reg & TX_DS) > 0;
-		  //uint8_t max_rt = (status_reg & MAX_RT) > 0;
-		  uint8_t tx_full = (status_reg & STATUS_TX_FULL) > 0;
+		if(irqRead()){
+			//some debug outputs about interrupt flags
+			uint8_t status_reg = readReg(STATUS);
+			//uint8_t rx_dr = (status_reg & RX_DR) > 0;
+			uint8_t tx_ds = (status_reg & TX_DS) > 0;
+			//uint8_t max_rt = (status_reg & MAX_RT) > 0;
+			uint8_t tx_full = (status_reg & STATUS_TX_FULL) > 0;
 
-		  if(tx_ds) {
-			  //uprintf("ACK payload delivered. Clearing TX_DS!\n");
-			  writeReg(STATUS, TX_DS); //clearing TX_DS interrupt (ACK sent)
-		  } else {
+			if(tx_ds) {
+				//uprintf("ACK payload delivered. Clearing TX_DS!\n");
+				writeReg(STATUS, TX_DS); //clearing TX_DS interrupt (ACK sent)
+			} else {
 
-			  //uprintf("Interrupts: rx_dr: %i, tx_ds: %i, max_rt: %i, tx_full: %i    ", rx_dr, tx_ds, max_rt, tx_full);
+				//uprintf("Interrupts: rx_dr: %i, tx_ds: %i, max_rt: %i, tx_full: %i    ", rx_dr, tx_ds, max_rt, tx_full);
 
-			  //handle interrupts and incoming packets
-			  roboCallback();
+				//handle interrupts and incoming packets
+				roboCallback();
 
-			  if(tx_full) {
-				  //uprintf("TX FIFO is full. Flushing buffer...\n");
-				  flushTX();
-			  }
-		  }
-	  }
+				if(tx_full) {
+					//uprintf("TX FIFO is full. Flushing buffer...\n");
+					flushTX();
+				}
+			}
+		}
 
-	  /*
-	   *  here you can read from "roboData receivedRoboData"
-	   *  and write to "roboAckData preparedAckData"
-	   */
-	  preparedAckData.roboID = myRoboID;
-	  //pollingSomeSensors(&preparedAckData);
-	  //whatDoIneedToDo(&receivedRoboData);
-
-
-	  /* END nRF24 polling */
+		/*
+		 *  here you can read from "roboData receivedRoboData"
+		 *  and write to "roboAckData preparedAckData"
+		 */
+		preparedAckData.roboID = myRoboID;
+		//pollingSomeSensors(&preparedAckData);
+		//whatDoIneedToDo(&receivedRoboData);
 
 
+		/* END nRF24 polling */
 
-  /* USER CODE END WHILE */
 
-  /* USER CODE BEGIN 3 */
 
-  }
-  /* USER CODE END 3 */
+		/* USER CODE END WHILE */
+
+		/* USER CODE BEGIN 3 */
+
+	}
+	/* USER CODE END 3 */
 
 }
 
 /** System Clock Configuration
-*/
+ */
 void SystemClock_Config(void)
 {
 
-  RCC_OscInitTypeDef RCC_OscInitStruct;
-  RCC_ClkInitTypeDef RCC_ClkInitStruct;
-  RCC_PeriphCLKInitTypeDef PeriphClkInit;
+	RCC_OscInitTypeDef RCC_OscInitStruct;
+	RCC_ClkInitTypeDef RCC_ClkInitStruct;
+	RCC_PeriphCLKInitTypeDef PeriphClkInit;
 
-    /**Initializes the CPU, AHB and APB busses clocks 
-    */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = 16;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    _Error_Handler(__FILE__, __LINE__);
-  }
+	/**Initializes the CPU, AHB and APB busses clocks
+	 */
+	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+	RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+	RCC_OscInitStruct.HSICalibrationValue = 16;
+	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+	{
+		_Error_Handler(__FILE__, __LINE__);
+	}
 
-    /**Initializes the CPU, AHB and APB busses clocks 
-    */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+	/**Initializes the CPU, AHB and APB busses clocks
+	 */
+	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+			|RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
-  {
-    _Error_Handler(__FILE__, __LINE__);
-  }
+	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+	{
+		_Error_Handler(__FILE__, __LINE__);
+	}
 
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_TIM1;
-  PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK1;
-  PeriphClkInit.Tim1ClockSelection = RCC_TIM1CLK_HCLK;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
-  {
-    _Error_Handler(__FILE__, __LINE__);
-  }
+	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_TIM1;
+	PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK1;
+	PeriphClkInit.Tim1ClockSelection = RCC_TIM1CLK_HCLK;
+	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+	{
+		_Error_Handler(__FILE__, __LINE__);
+	}
 
-    /**Configure the Systick interrupt time 
-    */
-  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+	/**Configure the Systick interrupt time
+	 */
+	HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
 
-    /**Configure the Systick 
-    */
-  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+	/**Configure the Systick
+	 */
+	HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 
-  /* SysTick_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+	/* SysTick_IRQn interrupt configuration */
+	HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
 /* USER CODE BEGIN 4 */
@@ -419,48 +419,48 @@ int ReadAddress(){
 /* USER CODE END 4 */
 
 /**
-  * @brief  This function is executed in case of error occurrence.
-  * @param  None
-  * @retval None
-  */
+ * @brief  This function is executed in case of error occurrence.
+ * @param  None
+ * @retval None
+ */
 void _Error_Handler(char * file, int line)
 {
-  /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
+	/* USER CODE BEGIN Error_Handler_Debug */
+	/* User can add his own implementation to report the HAL error return state */
 	uprintf("ERROR in file %s in line %i\n", file, line);
 	uprintf("Stopping execution. Please reset.\n");
 	while(1)
 	{
 	}
-  /* USER CODE END Error_Handler_Debug */ 
+	/* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef USE_FULL_ASSERT
 
 /**
-   * @brief Reports the name of the source file and the source line number
-   * where the assert_param error has occurred.
-   * @param file: pointer to the source file name
-   * @param line: assert_param error line source number
-   * @retval None
-   */
+ * @brief Reports the name of the source file and the source line number
+ * where the assert_param error has occurred.
+ * @param file: pointer to the source file name
+ * @param line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t* file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
+	/* USER CODE BEGIN 6 */
+	/* User can add his own implementation to report the file name and line number,
     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+	/* USER CODE END 6 */
 
 }
 
 #endif
 
 /**
-  * @}
-  */ 
+ * @}
+ */
 
 /**
-  * @}
-*/ 
+ * @}
+ */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
