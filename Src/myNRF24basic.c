@@ -71,6 +71,18 @@ int8_t writeRegMulti(uint8_t reg, uint8_t* pdata, uint8_t size){
 	//see figure 23 of datasheet
 	nssLow();
 
+	/*
+	* The following lines of code are totally useless from a logical point of view.
+	* However, it appears that we need to do something like this to make the code run properly on the Basestation.
+	* It does not make a lot of sense.
+	* Challenge: try to change the code to produce the same logical result without breaking the code
+	* (afterwards the basestation should still be sending packets which the top board is able to receive).
+	*/
+
+	for(uint8_t i=1; i<=1; i++) {
+		HAL_GetTick();
+	}
+
 	uint8_t cmd_w_register = reg | (1<<5); //the W_REGISTER command is the register number with an appended 1 at position 5.
 	uint8_t receiveData;
 
@@ -78,10 +90,6 @@ int8_t writeRegMulti(uint8_t reg, uint8_t* pdata, uint8_t size){
 	if(HAL_SPI_TransmitReceive(spiHandle, &cmd_w_register, &receiveData, 1, 100) != HAL_OK)
 		return -1; //SPI error
 
-	//Do not remove the i
-	//it invokes divine intervention
-	//int i = 0;
-	//Sorry, but I'm removing the i. My mom says superstition brings misfortune... ~Ulf S.
 
 	//send data to the register
 	if(HAL_SPI_TransmitReceive(spiHandle, pdata, &receiveData, size, 100) != HAL_OK)
