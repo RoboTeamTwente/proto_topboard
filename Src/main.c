@@ -53,7 +53,7 @@
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
-
+uint8_t localRobotID;
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 
@@ -110,10 +110,10 @@ int main(void)
 	/* USER CODE BEGIN 2 */
 
 	//setup code for using the nRF24 module
-	uint8_t myRoboID = ReadAddress(); //usually that should be the RobotID
+	localRobotID = ReadAddress(); //usually that should be the RobotID
 	nrf24nssHigh(); //I think we need that, but I can't really say, yet, why we would need to call low-level functions in main()
 
-	while(initRobo(&hspi2, RADIO_CHANNEL, myRoboID) != 0) {
+	while(initRobo(&hspi2, RADIO_CHANNEL, localRobotID) != 0) {
 		uprintf("Error while initializing nRF wireless module. Check connections.\n");
 	}
 
@@ -134,83 +134,16 @@ int main(void)
 	//  HAL_GPIO_WritePin(LED4_GPIO_Port, LED4_Pin, 0);
 	//uint8_t verbose = 1;
 
-	uint8_t bytesToSend = 2;
 
-	uint8_t dummyvalues[32];
-
-	for(uint8_t i=0; i<32; i++)
-		dummyvalues[i] = i+1;
-
-	uint8_t status_reg;
+	uint8_t receptionNo =0;
 	while(1) {
-		uint8_t bytesReceived=0;
-		uint8_t dataArray[200];
-
-
-		uprintf("\n");
-
-		status_reg = readReg(STATUS);
-
-		//uprintf("Status: %i (0x%02x)  ", status_reg, status_reg);
-		uprintf("STATUS: 0x%02x ( ", status_reg);
-		if(status_reg & RX_DR) uprintf("RX_DR ");
-		if(status_reg & TX_DS) uprintf("TX_DS ");
-		if(status_reg & MAX_RT) uprintf("MAX_RT ");
-		uint8_t pipeNo = (status_reg >> 1)&7;
-		if(pipeNo >= 0 && pipeNo <= 0b101) uprintf("PIPE:%i ", pipeNo);
-		if(pipeNo == 0b110) uprintf("RX_FIFO:not_used ");
-		if(pipeNo == 0b111) uprintf("RX_FIFO:empty ");
-		if(status_reg & STATUS_TX_FULL) uprintf("TX_FULL ");
-		uprintf(")\n");
-
-
-		if(status_reg & RX_DR)
-		{
-
-			bytesReceived = getDynamicPayloadLength();
-			uprintf("DynPayloadLen: %i (0x%02x)  ", bytesReceived, bytesReceived);
-
-			bytesReceived = 32;
-			readData(dataArray, bytesReceived);
-
-			uprintf("Rx'd Data (HEX): ");
-			for(int i=0; i<bytesReceived; i++) {
-				uprintf("%02x ", dataArray[i]);
-			}
-
-
-			uprintf("Writing %i Bytes to ACK Payload.", bytesToSend);
-			if(bytesToSend) {
-				HAL_Delay(10);
-				flushTX();
-				writeACKpayload(dummyvalues, bytesToSend, 1);
-			}
-			bytesToSend++;
-			if(bytesToSend > 32)
-				bytesToSend = 0;
-
-			writeReg(STATUS, RX_DR);
-			HAL_Delay(500);
-			nrfNOP();
-
-			status_reg = readReg(STATUS);
-			uprintf("\nSTATUS: 0x%02x ( ", status_reg);
-			if(status_reg & RX_DR) uprintf("RX_DR ");
-			if(status_reg & TX_DS) uprintf("TX_DS ");
-			if(status_reg & MAX_RT) uprintf("MAX_RT ");
-			pipeNo = (status_reg >> 1)&7;
-			if(pipeNo >= 0 && pipeNo <= 0b101) uprintf("PIPE:%i ", pipeNo);
-			if(pipeNo == 0b110) uprintf("RX_FIFO:not_used ");
-			if(pipeNo == 0b111) uprintf("RX_FIFO:empty ");
-			if(status_reg & STATUS_TX_FULL) uprintf("TX_FULL ");
-			uprintf(")\n");
-
-			uprintf("\n\n");
-		} else {
-			HAL_Delay(500);
+		if(roboCallback(localRobotID) == 0) {
+			uprintf("Reception Number %i. ID in packet was: %i.\n", receptionNo++, receivedRoboData.id);
+			//clearInterrupts(); //apparenlty useless anyway
 		}
+		//uprintf("\n");
+		HAL_Delay(100);
 
-		//HAL_Delay(500);
 	}
 
 	while (1)
@@ -241,7 +174,7 @@ int main(void)
 				//uprintf("Interrupts: rx_dr: %i, tx_ds: %i, max_rt: %i, tx_full: %i    ", rx_dr, tx_ds, max_rt, tx_full);
 
 				//handle interrupts and incoming packets
-				roboCallback();
+				roboCallback(localRobotID);
 
 				if(tx_full) {
 					//uprintf("TX FIFO is full. Flushing buffer...\n");
@@ -254,7 +187,7 @@ int main(void)
 		 *  here you can read from "roboData receivedRoboData"
 		 *  and write to "roboAckData preparedAckData"
 		 */
-		preparedAckData.roboID = myRoboID;
+		preparedAckData.roboID = localRobotID;
 		//pollingSomeSensors(&preparedAckData);
 		//whatDoIneedToDo(&receivedRoboData);
 

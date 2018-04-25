@@ -29,7 +29,7 @@ roboAckData preparedAckData; //ready-to-wrap data to build a packet for sending 
 
 int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t address);
 
-void roboCallback();
+int8_t roboCallback(uint8_t localRobotID);
 
 //void printDataStruct(dataPacket* dataStruct);
 

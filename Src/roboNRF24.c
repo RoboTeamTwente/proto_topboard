@@ -10,7 +10,7 @@
  */
 
 #include <roboNRF24.h>
-//#include "PuttyInterface/PuttyInterface.h" //should be removed after debugging
+#include "PuttyInterface/PuttyInterface.h" //should be removed after debugging
 
 int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboID){
 	/*
@@ -82,17 +82,24 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
  * Read the FIFO_STATUS and check RX_EMPTY.
  *
  */
-void roboCallback(){
-	//uint8_t verbose = 1;
+//negative values on erros.
+//0 on success
+int8_t roboCallback(uint8_t localRobotID){
 	uint8_t dataArray[32];
+	uint8_t verbose = 0;
 
-
+	/*
 	uint8_t status_reg = readReg(STATUS);
 	if( (status_reg & RX_DR) == 0) {
 		//if no packet arrived, abort
-		return;
+		if(verbose) uprintf("No new packet arrived.\n");
+		//return -1;
 	}
 
+	for(uint8_t i=0; i<3; i++) {
+		status_reg = readReg(STATUS);
+	}
+	*/
 	//check on which pipe number the new packet arrived
 	//uint8_t dataPipeNo = (status_reg >> 1) & 0b111; //reading RX_P_NO
 
@@ -113,6 +120,12 @@ void roboCallback(){
 	 */
 	readData(dataArray, ROBOPKTLEN+3);
 
+	uint8_t receivedRobotID = (dataArray+3)[0]>>3; //see packet format
+
+	if(receivedRobotID != localRobotID) {
+		if(verbose) uprintf("Received RobotID was wrong. Rx'd: %i (0x%02x)\n", receivedRobotID, receivedRobotID);
+		return -3; //packet wasn't for me (or, more likely: we did not receive any packet and read bullshit from the buffer)
+	}
 	//putting the new data from the packet on the struct
 	packetToRoboData(dataArray+3, &receivedRoboData);
 	//clear RX interrupt
@@ -143,18 +156,17 @@ void roboCallback(){
 
 
 	//building a packet from the current roboAckData struct
-	uint8_t byteArray[32];
-	roboAckDataToPacket(&preparedAckData, byteArray);
-	uint8_t ackDataLength = 11;
+	uint8_t txPacket[32];
+	roboAckDataToPacket(&preparedAckData, txPacket);
+	uint8_t ackDataLength = SHORTACKPKTLEN;
 	if(receivedRoboData.debug_info)
-		ackDataLength = 23; //adding xsense data
-	if(writeACKpayload(byteArray, ackDataLength, 1) != 0) { //eat this, basestation!
+		ackDataLength = FULLACKPKTLEN; //adding xsense data
+	if(writeACKpayload(txPacket, ackDataLength, 1) != 0) { //eat this, basestation!
 		//if(verbose) uprintf("Error writing ACK payload. TX FIFO full?\n");
-		return;
-	} else {
-		//if(verbose) uprintf("ACK payload written.");
+		return -2; //error while writing ACK payload to buffer
 	}
 
+	return 0; //success
 }
 
 
