@@ -157,11 +157,13 @@ int8_t roboCallback(uint8_t localRobotID){
 
 	//building a packet from the current roboAckData struct
 	uint8_t txPacket[32];
-	roboAckDataToPacket(&preparedAckData, txPacket);
-	uint8_t ackDataLength = SHORTACKPKTLEN;
-	if(receivedRoboData.debug_info)
-		ackDataLength = FULLACKPKTLEN; //adding xsense data
-	if(writeACKpayload(txPacket, ackDataLength, 1) != 0) { //eat this, basestation!
+	//roboAckDataToPacket(&preparedAckData, txPacket);
+	//uint8_t ackDataLength = SHORTACKPKTLEN;
+	//if(receivedRoboData.debug_info)
+	//	ackDataLength = FULLACKPKTLEN; //adding xsense data
+	robotDataToPacket(&receivedRoboData, txPacket); //sending back the packet we just received
+	//if(writeACKpayload(txPacket, ackDataLength, 1) != 0) { //eat this, basestation!
+	if(writeACKpayload(txPacket, ROBOPKTLEN, 1) != 0) { //just for testing sending a robot packet to the basestation.
 		//if(verbose) uprintf("Error writing ACK payload. TX FIFO full?\n");
 		return -2; //error while writing ACK payload to buffer
 	}
