@@ -322,37 +322,14 @@ int ReadAddress(){
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	uprintf("\n\nInterrupt fired.\n");
 
-	//some debug outputs about interrupt flags
-	uint8_t status_reg = readReg(STATUS);
-	uint8_t rx_dr = (status_reg & RX_DR) > 0;
-	uint8_t tx_ds = (status_reg & TX_DS) > 0;
-	uint8_t max_rt = (status_reg & MAX_RT) > 0;
-	uint8_t tx_full = (status_reg & STATUS_TX_FULL) > 0;
-
-	if(tx_ds) {
-		uprintf("ACK payload delivered. Clearing TX_DS!\n");
-		writeReg(STATUS, TX_DS); //clearing TX_DS interrupt (ACK sent)
-	} else {
-
-		uprintf("Interrupts: rx_dr: %i, tx_ds: %i, max_rt: %i, tx_full: %i    ", rx_dr, tx_ds, max_rt, tx_full);
-
-		//handle interrupts and incoming packets
-		roboCallback(localRobotID);
-
-		if(tx_full) {
-			uprintf("TX FIFO is full. Flushing buffer...\n");
-			flushTX();
-		}
+	int8_t error_code = roboCallback(localRobotID);
+	if(error_code) {
+		uprintf("RoboCallback failed with error: %i\n", error_code);
 	}
 
-	status_reg = readReg(STATUS);
-	rx_dr = (status_reg & RX_DR) > 0;
-	tx_ds = (status_reg & TX_DS) > 0;
-	max_rt = (status_reg & MAX_RT) > 0;
-	tx_full = (status_reg & STATUS_TX_FULL) > 0;
-	uprintf("Printing Interrupts again before clearing: rx_dr: %i, tx_ds: %i, max_rt: %i, tx_full: %i    ", rx_dr, tx_ds, max_rt, tx_full);
 
-	clearInterrupts();
+
+	clearInterrupts(); //should not be needed
 }
 
 /* USER CODE END 4 */

@@ -377,8 +377,6 @@ uint8_t getStaticPayloadLength(uint8_t dataPipeNo) {
 //write ACK payload to module
 //this payload will be included in the payload of ACK packets when automatic acknowledgments are activated
 int8_t writeACKpayload(uint8_t* payloadBytes, uint8_t payload_length, uint8_t pipeNo) {
-	return 0; //NOT TODAY BITCH
-
 
 	//This function should be called as often as a packet was received (either before or after reception),
 	//because the module can only hold up to 3 ACK packets.
@@ -394,6 +392,7 @@ int8_t writeACKpayload(uint8_t* payloadBytes, uint8_t payload_length, uint8_t pi
 		flushTX(); //will ensure that we don't overflow with 3 ACK packets or more
 		//return -1; //error: FIFO full
 	}
+	flushTX(); //flush unconditionally because we can't trust the readReg()
 
 	nssLow();
 

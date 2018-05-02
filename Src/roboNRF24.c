@@ -90,7 +90,10 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
 //0 on success
 int8_t roboCallback(uint8_t localRobotID){
 	uint8_t dataArray[32];
-	uint8_t verbose = 0;
+	uint8_t verbose = 1;
+
+	//clear RX interrupt
+	writeReg(STATUS, RX_DR);
 
 	/*
 	uint8_t status_reg = readReg(STATUS);
@@ -124,6 +127,8 @@ int8_t roboCallback(uint8_t localRobotID){
 	 */
 	readData(dataArray, ROBOPKTLEN+4); //+3 for misalignment +1 for cheksum byte.
 
+
+
 	//calculate the checksum for what I received
 	uint8_t calculated_checksum = 0;
 
@@ -147,9 +152,7 @@ int8_t roboCallback(uint8_t localRobotID){
 	}
 	//putting the new data from the packet on the struct
 	packetToRoboData(dataArray+3, &receivedRoboData);
-	//clear RX interrupt
 	//if(verbose) uprintf("Clearing RX_DR interrupt.\n");
-	writeReg(STATUS, RX_DR);
 	nrf24ceHigh();
 
 
