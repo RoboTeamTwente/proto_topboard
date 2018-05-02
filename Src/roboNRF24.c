@@ -23,8 +23,12 @@ int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboI
 		return -1; //error
 	}
 
-	//activate all interrupts
-	writeReg(CONFIG, readReg(CONFIG) & ~(MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT));
+	//set interrupts
+	uint8_t config_reg = readReg(CONFIG);
+	config_reg &= ~MASK_RX_DR;   //enable for RX_DR
+	config_reg &= ~MASK_TX_DS;  //enable for TX_DS
+	config_reg &= ~MASK_MAX_RT; //enable for MAX_RT
+	writeReg(CONFIG, config_reg);
 
 	setFreqChannel(freqChannel);
 	//setLowSpeed();
@@ -118,7 +122,22 @@ int8_t roboCallback(uint8_t localRobotID){
 	 * For some reason the payload is always off by 3 bytes.. so we need to apply a hack here
 	 * Also, the status register isn't read properly. So, we need to assume a static payload length..
 	 */
-	readData(dataArray, ROBOPKTLEN+3);
+	readData(dataArray, ROBOPKTLEN+4); //+3 for misalignment +1 for cheksum byte.
+
+	//calculate the checksum for what I received
+	uint8_t calculated_checksum = 0;
+
+	//start at 3 for the misaligment
+	for(uint8_t i=3; i<(ROBOPKTLEN+3); i++) {
+		calculated_checksum ^= dataArray[i];
+	}
+
+	uint8_t received_checksum = dataArray[ROBOPKTLEN+3];
+	//compare the calculated checksum with the received checksum
+	if(calculated_checksum != received_checksum) {
+		//checksums don't match.
+		return -4;
+	}
 
 	uint8_t receivedRobotID = (dataArray+3)[0]>>3; //see packet format
 
@@ -203,5 +222,7 @@ void nrf24ceLow(){
 
 //read the interrupt pin
 uint8_t nrf24irqRead(){
-	return !HAL_GPIO_ReadPin(SPI2_IRQ_GPIO_Port, SPI2_IRQ_Pin);
+	//return !HAL_GPIO_ReadPin(SPI2_IRQ_GPIO_Port, SPI2_IRQ_Pin);
+	//has been changed to using Interrupts on that pin
+	return 0;
 }
