@@ -320,7 +320,7 @@ int ReadAddress(){
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-	uprintf("\n\nInterrupt fired.\n");
+	//uprintf("\n\nInterrupt fired.\n");
 
 	int8_t error_code = roboCallback(localRobotID);
 	if(error_code) {

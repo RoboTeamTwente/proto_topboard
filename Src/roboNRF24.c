@@ -179,18 +179,52 @@ int8_t roboCallback(uint8_t localRobotID){
 
 	//building a packet from the current roboAckData struct
 	uint8_t txPacket[32];
-	//roboAckDataToPacket(&preparedAckData, txPacket);
-	//uint8_t ackDataLength = SHORTACKPKTLEN;
-	//if(receivedRoboData.debug_info)
-	//	ackDataLength = FULLACKPKTLEN; //adding xsense data
-	robotDataToPacket(&receivedRoboData, txPacket); //sending back the packet we just received
-	//if(writeACKpayload(txPacket, ackDataLength, 1) != 0) { //eat this, basestation!
-	if(writeACKpayload(txPacket, ROBOPKTLEN, 1) != 0) { //just for testing sending a robot packet to the basestation.
+
+	uint8_t ackDataLength;
+	if(receivedRoboData.debug_info)
+		ackDataLength = FULLACKPKTLEN; //adding xsense data
+	else
+		ackDataLength = SHORTACKPKTLEN;
+
+	fillAckData(ackDataLength);
+	roboAckDataToPacket(&preparedAckData, txPacket);
+
+
+	//robotDataToPacket(&receivedRoboData, txPacket); //sending back the packet we just received
+
+	if(writeACKpayload(txPacket, ackDataLength, 1) != 0) { //just for testing sending a robot packet to the basestation.
 		//if(verbose) uprintf("Error writing ACK payload. TX FIFO full?\n");
 		return -2; //error while writing ACK payload to buffer
 	}
 
 	return 0; //success
+}
+
+void fillAckData(uint8_t ackDataLength) {
+
+	preparedAckData.roboID = 5;
+	preparedAckData.wheelLeftFront = 1;
+	preparedAckData.wheelLeftFront = 1;
+	preparedAckData.wheelRightFront = 1;
+	preparedAckData.wheelLeftBack = 1;
+	preparedAckData.wheelRightBack = 1;
+	preparedAckData.genevaDriveState = 1;
+	preparedAckData.batteryState = 1;
+	preparedAckData.xPosRobot = 50;
+	preparedAckData.yPosRobot = 1;
+	preparedAckData.rho = 1;
+	preparedAckData.theta = 1;
+	preparedAckData.orientation = 1;
+	preparedAckData.angularVelocity = 1;
+	preparedAckData.ballSensor = 10;
+
+	if(ackDataLength == SHORTACKPKTLEN) {
+		//extra fields (add 12 Bytes)
+		preparedAckData.xAcceleration = 10;
+		preparedAckData.yAcceleration = 20;
+		preparedAckData.angularRate = 30;
+	}
+
 }
 
 
