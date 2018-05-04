@@ -218,7 +218,7 @@ void fillAckData(uint8_t ackDataLength) {
 	preparedAckData.angularVelocity = 1;
 	preparedAckData.ballSensor = 10;
 
-	if(ackDataLength == SHORTACKPKTLEN) {
+	if(ackDataLength == FULLACKPKTLEN) {
 		//extra fields (add 12 Bytes)
 		preparedAckData.xAcceleration = 10;
 		preparedAckData.yAcceleration = 20;
