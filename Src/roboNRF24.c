@@ -12,6 +12,8 @@
 #include <roboNRF24.h>
 #include "PuttyInterface/PuttyInterface.h" //should be removed after debugging
 
+uint8_t counter = 0;
+
 int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboID){
 	/*
 	 * TODO
@@ -210,19 +212,22 @@ void fillAckData(uint8_t ackDataLength) {
 	preparedAckData.wheelRightBack = 1;
 	preparedAckData.genevaDriveState = 1;
 	preparedAckData.batteryState = 1;
-	preparedAckData.xPosRobot = 50;
-	preparedAckData.yPosRobot = 1;
-	preparedAckData.rho = 1;
-	preparedAckData.theta = 1;
-	preparedAckData.orientation = 1;
-	preparedAckData.angularVelocity = 1;
-	preparedAckData.ballSensor = 10;
+	preparedAckData.xPosRobot = counter;
+	preparedAckData.yPosRobot = counter;
+	preparedAckData.rho = counter;
+	preparedAckData.theta = counter;
+	preparedAckData.orientation = counter;
+	preparedAckData.angularVelocity = counter;
+	preparedAckData.ballSensor = counter;
 
 	if(ackDataLength == FULLACKPKTLEN) {
+		counter++;
+		if(counter>10000)
+			counter = 1;
 		//extra fields (add 12 Bytes)
-		preparedAckData.xAcceleration = 10;
-		preparedAckData.yAcceleration = 20;
-		preparedAckData.angularRate = 30;
+		preparedAckData.xAcceleration = counter;
+		preparedAckData.yAcceleration = counter;
+		preparedAckData.angularRate = counter;
 	}
 
 }
