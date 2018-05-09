@@ -11,10 +11,10 @@
 #ifndef MYNRF24BASIC_H_
 #define MYNRF24BASIC_H_
 
-#include "bitops.h"
-#include <inttypes.h>
-#include "spi.h"
-#include "myNRF24.h"
+#include "bitops.h"  //for setBit() and readBit() in myNRF24.c
+#include <inttypes.h> //for uint8_t and so on
+#include "spi.h" //for commands like HAL_SPI_TransmitReceive and the type SPI_HandleTypeDef
+//#include "myNRF24.h"
 
 //defining SPI Commands (datasheet, page 48)
 #define NRF_R_REGISTER 0x00 //000AAAAA, AAAAA= Register
@@ -170,11 +170,11 @@ enum DYNPD_FLAG {
 enum FEATURE_FLAG {
 	EN_DPL = 1<<2,
 	EN_ACK_PAY = 1<<1,
-	EN_DYN_ACK = 1<<0,
+	EN_DYN_ACK = 1<<0, //enables the W_TX_PAYLOAD_NOACK SPI command
 };
 
 
-SPI_HandleTypeDef* spiHandle;
+extern SPI_HandleTypeDef* spiHandle;
 
 /*
  * Below we have pointers to functions implementing the pin setters.
@@ -185,42 +185,40 @@ SPI_HandleTypeDef* spiHandle;
  * (but it still needs to declare it).
  */
 //put the nss pin corresponding to the SPI used high
-void (*nssHigh)();
+extern void (*nssHigh)();
 //put the nss pin corresponding to the SPI used low
-void (*nssLow)();
+extern void (*nssLow)();
 //put the ce pin corresponding to the SPI used high
-void (*ceHigh)();
+extern void (*ceHigh)();
 //put the ce pin corresponding to the SPI used low
-void (*ceLow)();
+extern void (*ceLow)();
 
 //reading the irq pin state
-uint8_t (*irqRead)();
+extern uint8_t (*irqRead)();
 
 //read the interrupt pin
 //uint8_t irqRead(SPI_HandleTypeDef* spiHandle);
 
 //returns 0 on success; -1 on error
-int8_t clearInterrupts(SPI_HandleTypeDef* spiHandle);
+int8_t clearInterrupts();
 
 
 //write to a register
 //returns 0 on success; -1 on error
-int8_t writeReg(SPI_HandleTypeDef* spiHandle, uint8_t reg, uint8_t data);
+int8_t writeReg(uint8_t reg, uint8_t data);
 
 //write to a multi-byte register
 //returns 0 on success; -1 on error
-int8_t writeRegMulti(SPI_HandleTypeDef* spiHandle, uint8_t reg, uint8_t* pdata, uint8_t size);
+int8_t writeRegMulti(uint8_t reg, uint8_t* pdata, uint8_t size);
 
-//read a register and output debug info to the terminal
-uint8_t readRegDebug(SPI_HandleTypeDef* spiHandle, uint8_t reg);
 
 //read a register
-uint8_t readReg(SPI_HandleTypeDef* spiHandle, uint8_t reg);
+int8_t readReg(uint8_t reg);
 
 //read a multi-byte register
 //output will be stored in the array dataBuffer
 //returns 0 on success; -1 on error
-int8_t readRegMulti(SPI_HandleTypeDef* spiHandle, uint8_t reg, uint8_t* dataBuffer, uint8_t size);
+int8_t readRegMulti(uint8_t reg, uint8_t* dataBuffer, uint8_t size);
 
 
 

@@ -16,16 +16,16 @@
 
 
 //returns 0 on success; -1 on error
-int8_t clearInterrupts(SPI_HandleTypeDef* spiHandle) {
+int8_t clearInterrupts() {
 	//0x70 clears the interrupts for: Rx Data Ready, Tx Data Sent and Maximum Retransmits
 	//see datasheet page 56 for details
 	//forward return code (error code) of writeReg() to caller of clearInterrupts()
-	return writeReg(spiHandle, STATUS, (RX_DR | TX_DS | MAX_RT));
+	return writeReg(STATUS, (RX_DR | TX_DS | MAX_RT));
 }
 
 //write to a register
 //returns 0 on success; -1 on error
-int8_t writeReg(SPI_HandleTypeDef* spiHandle, uint8_t reg, uint8_t data){
+int8_t writeReg(uint8_t reg, uint8_t data){
 	if(reg == 	RX_ADDR_P0 || reg == RX_ADDR_P1 || reg == TX_ADDR){
 		//TextOut("Error, this is a multi-byte register. use writeRegMulti instead\n");
 		return -1; //error
@@ -37,7 +37,7 @@ int8_t writeReg(SPI_HandleTypeDef* spiHandle, uint8_t reg, uint8_t data){
 
 	//commands can only be given after a falling edge of the nss pin
 	//see figure 23 of datasheet
-	nssLow(spiHandle);
+	nssLow();
 
 	//the SPI command to write to register X, you take the number of register X
 	//and add 2^5 to it (set the bit on position 5).
@@ -52,18 +52,16 @@ int8_t writeReg(SPI_HandleTypeDef* spiHandle, uint8_t reg, uint8_t data){
 	if(HAL_SPI_Transmit(spiHandle, &sendData, 1, 100) != HAL_OK)
 		return -1; //HAL/SPI error
 
-	nssHigh(spiHandle);
-	//HAL_Delay(10);
+	nssHigh();
 	return 0; //return with no error
 }
 
 
 //write to a multi-byte register
 //returns 0 on success; -1 on error
-int8_t writeRegMulti(SPI_HandleTypeDef* spiHandle, uint8_t reg, uint8_t* pdata, uint8_t size){
+int8_t writeRegMulti(uint8_t reg, uint8_t* pdata, uint8_t size){
 	if(!(reg == RX_ADDR_P0 || reg == RX_ADDR_P1 || reg == TX_ADDR)){
-		//TextOut("Error, invalid register. It is either read only, single byte or non-existing.\n");
-		return -1;
+		return -1; //invalid register
 	}
 	else if(size > 5){
 		//TextOut("Error, size can never be bigger than 5\n");
@@ -71,7 +69,19 @@ int8_t writeRegMulti(SPI_HandleTypeDef* spiHandle, uint8_t reg, uint8_t* pdata, 
 	}
 	//commands can only be given after a falling edge of the nss pin
 	//see figure 23 of datasheet
-	nssLow(spiHandle);
+	nssLow();
+
+	/*
+	* The following lines of code are totally useless from a logical point of view.
+	* However, it appears that we need to do something like this to make the code run properly on the Basestation.
+	* It does not make a lot of sense.
+	* Challenge: try to change the code to produce the same logical result without breaking the code
+	* (afterwards the basestation should still be sending packets which the top board is able to receive).
+	*/
+
+	for(uint8_t i=1; i<=1; i++) {
+		HAL_GetTick();
+	}
 
 	uint8_t cmd_w_register = reg | (1<<5); //the W_REGISTER command is the register number with an appended 1 at position 5.
 	uint8_t receiveData;
@@ -80,42 +90,38 @@ int8_t writeRegMulti(SPI_HandleTypeDef* spiHandle, uint8_t reg, uint8_t* pdata, 
 	if(HAL_SPI_TransmitReceive(spiHandle, &cmd_w_register, &receiveData, 1, 100) != HAL_OK)
 		return -1; //SPI error
 
-	//Do not remove the i
-	//it invokes divine intervention
-	//int i = 0;
-	//Sorry, but I'm removing the i. My mom says superstition brings misfortune... ~Ulf S.
 
 	//send data to the register
 	if(HAL_SPI_TransmitReceive(spiHandle, pdata, &receiveData, size, 100) != HAL_OK)
 		return -1; //SPI error
 
-	nssHigh(spiHandle);
-	//HAL_Delay(10);
+	nssHigh();
 	return 0;
 }
 
 //read a register
-uint8_t readReg(SPI_HandleTypeDef* spiHandle, uint8_t reg){
+//on error: (-1) on SPI problem. (-2) on invalid argument.
+//on success: returns the register value
+int8_t readReg(uint8_t reg){
 	if(reg > 0x1D){
-		//TextOut("Error, invalid register\n");
-		return 0xF0; //error
+		return -2; //error: invalid register
 	}
 
 	//commands can only be given after a falling edge of the nss pin
 	//see figure 23 of datasheet
-	nssLow(spiHandle);
+	nssLow();
 
 	uint8_t sendData = reg; //R_REGISTER = 000A AAAA -> AAAAA = 5 bit register address
 	uint8_t receiveData;
 	//command: read from register reg
 	if(HAL_SPI_Transmit(spiHandle, &sendData, 1, 100) != HAL_OK)
-		return 0xF0; //error
+		return 0xff; //error: SPI problem
 
 	//read data from the register
-	HAL_SPI_Receive(spiHandle, &receiveData, 1, 100);
+	if(HAL_SPI_Receive(spiHandle, &receiveData, 1, 100) != HAL_OK)
+		return 0xff; //error: SPI problem
 
-	nssHigh(spiHandle);
-	//HAL_Delay(10);
+	nssHigh();
 
 	return receiveData;
 }
@@ -123,14 +129,13 @@ uint8_t readReg(SPI_HandleTypeDef* spiHandle, uint8_t reg){
 //read a multi-byte register
 //output will be stored in the array dataBuffer
 //returns 0 on success; -1 on error
-int8_t readRegMulti(SPI_HandleTypeDef* spiHandle, uint8_t reg, uint8_t* dataBuffer, uint8_t size){
+int8_t readRegMulti(uint8_t reg, uint8_t* dataBuffer, uint8_t size){
 	if(reg > 0x1D){
-		TextOut("Error, invalid register\n");
 		return -1; //error
 	}
 	//commands can only be given after a falling edge of the nss pin
 	//see figure 23 of datasheet
-	nssLow(spiHandle);
+	nssLow();
 
 	//command: read reg 5
 	uint8_t sendData = reg; //R_REGISTER = 000A AAAA -> AAAAA = 5 bit register address
@@ -142,10 +147,7 @@ int8_t readRegMulti(SPI_HandleTypeDef* spiHandle, uint8_t reg, uint8_t* dataBuff
 	if(HAL_SPI_Receive(spiHandle, dataBuffer, 5, 100) != HAL_OK)
 		return -1; //HAL/SPI error
 
-	nssHigh(spiHandle);
-
-	HAL_Delay(10);
-
+	nssHigh();
 	return 0; //no error
 }
 

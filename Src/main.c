@@ -36,7 +36,6 @@
   ******************************************************************************
   */
 /* Includes ------------------------------------------------------------------*/
-#include <roboNRF24.h>
 #include "main.h"
 #include "stm32f3xx_hal.h"
 #include "spi.h"
@@ -47,8 +46,8 @@
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
 #include "PuttyInterface/PuttyInterface.h"
-#include "myNRF24.h"
-#include "roboNRF24.h"
+#include "wireless/myNRF24.h"
+#include "wireless/roboNRF24.h"
 
 /* USER CODE END Includes */
 
@@ -60,7 +59,11 @@
 //values for puttyinterface.h
 uint8_t rec_buf[8];
 char small_buf;
-bool huart2_Rx_flag = false;
+volatile bool huart2_Rx_flag = false;
+
+uint8_t localRobotID;
+
+uint8_t receptionNo =0; //debug
 
 /* USER CODE END PV */
 
@@ -109,54 +112,56 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
 
-  //setup code for using the nRF24 module
-  uint8_t robotID = ReadAddress(); //usually that should be the RobotID
-  nrf24nssHigh(); //I think we need that, but I can't really say, yet, why we would need to call low-level functions in main()
+	//setup code for using the nRF24 module
+	localRobotID = ReadAddress(); //usually that should be the RobotID
+	nrf24nssHigh(); //I think we need that, but I can't really say, yet, why we would need to call low-level functions in main()
 
-  initRobo(&hspi2, RADIO_CHANNEL, robotID);
-  dataPacket dataStruct;
+	while(initRobo(&hspi2, RADIO_CHANNEL, localRobotID) != 0) {
+		uprintf("Error while initializing nRF wireless module. Check connections.\n");
+	}
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  char * startmessage = "---------------------\n\r";
-  uprintf(startmessage);
-  uprintf("Build: %s %s\n", __DATE__, __TIME__);
-  HAL_UART_Receive_IT(&huart1, rec_buf, 1);
+	char * startmessage = "---------------------\n\r";
+	uprintf(startmessage);
+	uprintf("Build: %s %s\n", __DATE__, __TIME__);
 
-  //int tick = 0;
-  HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
-  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, 1);
-  //HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, 0);
-//  HAL_GPIO_WritePin(LED4_GPIO_Port, LED4_Pin, 0);
+	HAL_UART_Receive_IT(&huart1, rec_buf, 1); //This is needed for debugging input/output on serial
 
-  while (1)
-  {
-	  //HAL_Delay(10); //10ms delay
-	  if(huart2_Rx_flag){
-		  //handle debug input/output over UART (connect an ST-Link to it for easy debugging over USB)
-		  huart2_Rx_flag = false;
-		  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED3_Pin);
-		  HandlePcInput(&small_buf, 1, HandleCommand);
-		  HAL_UART_Receive_IT(&huart1, rec_buf, 1);
-		  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED3_Pin);
-	  }
+	//int tick = 0;
+	HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
+	HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, 1);
+	//HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, 0);
+	//  HAL_GPIO_WritePin(LED4_GPIO_Port, LED4_Pin, 0);
+	//uint8_t verbose = 1;
 
-	  if(irqRead(&hspi2)){
-		  uprintf("Received something..\n");
-		  roboCallback(&hspi2, &dataStruct);
-		  if(dataStruct.robotID == ReadAddress()){
-			  uprintf("It's for me!\n");
-			  //blink
-			  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
-			  HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
 
-		  }
-		  //HAL_Delay(10);
-		  //flushRX(&hspi2);
-	  }
-	  /* END nRF24 polling */
+
+	while (1)
+	{
+		//HAL_Delay(10); //10ms delay
+		if(huart2_Rx_flag){
+			//handle debug input/output over UART (connect an ST-Link to it for easy debugging over USB)
+			huart2_Rx_flag = false;
+			HAL_GPIO_TogglePin(LED1_GPIO_Port, LED3_Pin);
+			HandlePcInput(&small_buf, 1, HandleCommand);
+			HAL_UART_Receive_IT(&huart1, rec_buf, 1);
+			HAL_GPIO_TogglePin(LED1_GPIO_Port, LED3_Pin);
+		}
+
+
+		/*
+		 *  here you can read from "roboData receivedRoboData"
+		 *  and write to "roboAckData preparedAckData"
+		 */
+		preparedAckData.roboID = localRobotID;
+		//pollingSomeSensors(&preparedAckData);
+		//whatDoIneedToDo(&receivedRoboData);
+
+
+		/* END nRF24 polling */
 
 
 
@@ -164,7 +169,7 @@ int main(void)
 
   /* USER CODE BEGIN 3 */
 
-  }
+	}
   /* USER CODE END 3 */
 
 }
@@ -230,11 +235,67 @@ void HandleCommand(char * input){
 	}else if(!strcmp(input, "address")){
 		uprintf("Address = [%d]\n\r", ReadAddress());
 	}else if(!strcmp(input, "reg")) {
-		uprintf("You are trying to read registers.\n");
-		uprintf("This feature is under construction.\n");
-		uint8_t registerOutput = readReg(&hspi2, 0x0A); //0x0A = RX_ADDR_P0 -- Receiving Address, Data Pipe 0.
-		uprintf("RX_ADDR_P0: 0x%x\n", registerOutput);
-		uprintf("This output will be more explanatory in the future.\n");
+		uprintf("Reading registers.\n");
+		//uprintf("This feature is under construction.\n");
+		//uint8_t registerOutput = readReg(RX_ADDR_P0); //0x0A = RX_ADDR_P0 -- Receiving Address, Data Pipe 0.
+		//uprintf("RX_ADDR_P0: 0x%x\n", registerOutput);
+		//uprintf("This output will be more explanatory in the future.\n");
+		uprintf("CONFIG: 0x%02x\n", readReg(CONFIG));
+		uprintf("EN_AA: 0x%02x\n", readReg(EN_AA));
+		uprintf("EN_RXADDR: 0x%02x\n", readReg(EN_RXADDR));
+		uprintf("SETUP_AW: 0x%02x\n", readReg(SETUP_AW));
+		uprintf("SETUP_RETR: 0x%02x\n", readReg(SETUP_RETR));
+		uprintf("RF_CH: 0x%02x\n", readReg(RF_CH));
+		uprintf("RF_SETUP: 0x%02x\n", readReg(RF_SETUP));
+
+		uint8_t status_reg = readReg(STATUS);
+		uprintf("STATUS: 0x%02x ( ", status_reg);
+		if(status_reg & RX_DR) uprintf("RX_DR ");
+		if(status_reg & TX_DS) uprintf("TX_DS ");
+		if(status_reg & MAX_RT) uprintf("MAX_RT ");
+		uint8_t pipeNo = (status_reg >> 1)&7;
+		if(pipeNo >= 0 && pipeNo <= 0b101) uprintf("PIPE:%i ", pipeNo);
+		if(pipeNo == 0b110) uprintf("RX_FIFO:not_used ");
+		if(pipeNo == 0b111) uprintf("RX_FIFO:empty ");
+		if(status_reg & STATUS_TX_FULL) uprintf("TX_FULL ");
+		uprintf(")\n");
+
+		uprintf("OBSERVE_TX: 0x%02x\n", readReg(OBSERVE_TX));
+		uprintf("RPD: 0x%02x\n", readReg(RPD));
+		uint8_t buffer[5];
+		readRegMulti(RX_ADDR_P0, buffer, 5);
+		uprintf("RX_ADDR_P0: 0x%x%x%x%x%x\n", buffer[0],buffer[1],buffer[2],buffer[3],buffer[4]);
+		readRegMulti(RX_ADDR_P1, buffer, 5);
+		uprintf("RX_ADDR_P1: 0x%x%x%x%x%x\n", buffer[0],buffer[1],buffer[2],buffer[3],buffer[4]);
+		readRegMulti(RX_ADDR_P2, buffer, 5);
+		uprintf("RX_ADDR_P2: 0x%x%x%x%x%x\n", buffer[0],buffer[1],buffer[2],buffer[3],buffer[4]);
+		readRegMulti(RX_ADDR_P3, buffer, 5);
+		uprintf("RX_ADDR_P3: 0x%x%x%x%x%x\n", buffer[0],buffer[1],buffer[2],buffer[3],buffer[4]);
+		readRegMulti(RX_ADDR_P4, buffer, 5);
+		uprintf("RX_ADDR_P4: 0x%x%x%x%x%x\n", buffer[0],buffer[1],buffer[2],buffer[3],buffer[4]);
+		readRegMulti(RX_ADDR_P5, buffer, 5);
+		uprintf("RX_ADDR_P5: 0x%x%x%x%x%x\n", buffer[0],buffer[1],buffer[2],buffer[3],buffer[4]);
+
+		readRegMulti(TX_ADDR, buffer, 5);
+		uprintf("TX_ADDR: 0x%x%x%x%x%x\n", buffer[0],buffer[1],buffer[2],buffer[3],buffer[4]);
+		uprintf("RX_PW_P0: 0x%02x\n", readReg(RX_PW_P0));
+		uprintf("RX_PW_P1: 0x%02x\n", readReg(RX_PW_P1));
+		uprintf("RX_PW_P2: 0x%02x\n", readReg(RX_PW_P2));
+		uprintf("RX_PW_P3: 0x%02x\n", readReg(RX_PW_P3));
+		uprintf("RX_PW_P4: 0x%02x\n", readReg(RX_PW_P4));
+		uprintf("RX_PW_P5: 0x%02x\n", readReg(RX_PW_P5));
+		uint8_t fifo_status = readReg(FIFO_STATUS);
+		uprintf("FIFO_STATUS: 0x%02x  ( ", fifo_status);
+		if(fifo_status & TX_REUSE) uprintf("TX_REUSE ");
+		if(fifo_status & FIFO_STATUS_TX_FULL) uprintf("TX_FULL ");
+		if(fifo_status & TX_EMPTY) uprintf("TX_EMPTY ");
+		if(fifo_status & RX_FULL) uprintf("RX_FULL ");
+		if(fifo_status & RX_EMPTY) uprintf("RX_EMPTY ");
+		uprintf(" )\n");
+
+		uprintf("DYNPD: 0x%02x\n", readReg(DYNPD));
+		uprintf("FEATURE: 0x%02x\n", readReg(FEATURE));
+
 	}else if(!strcmp(input, "help")) {
 		uprintf("----HELP----\n");
 		uprintf("Build: %s %s\n", __DATE__, __TIME__);
@@ -243,7 +304,7 @@ void HandleCommand(char * input){
 		uprintf("help -- Prints this help message\n");
 		uprintf("start -- Not implemented\n");
 		uprintf("address -- Prints the address as read from the DIP switches on the board.\n");
-		uprintf("reg -- Print the values of some registers. Call without Parameters.\n");
+		uprintf("reg -- Print the values of the nRF registers\n");
 		uprintf("(this list may be incomplete)\n");
 	}
 }
@@ -257,6 +318,20 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 int ReadAddress(){
 	return (HAL_GPIO_ReadPin(JD0_GPIO_Port, JD0_Pin) << 0 | HAL_GPIO_ReadPin(JD1_GPIO_Port, JD1_Pin)  << 1 | HAL_GPIO_ReadPin(JD2_GPIO_Port, JD2_Pin) << 2 | HAL_GPIO_ReadPin(JD3_GPIO_Port, JD3_Pin)  << 3);
 }
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+	//uprintf("\n\nInterrupt fired.\n");
+
+	int8_t error_code = roboCallback(localRobotID);
+	if(error_code) {
+		uprintf("RoboCallback failed with error: %i\n", error_code);
+	}
+
+
+
+	clearInterrupts(); //should not be needed
+}
+
 /* USER CODE END 4 */
 
 /**
@@ -267,7 +342,7 @@ int ReadAddress(){
 void _Error_Handler(char * file, int line)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
+	/* User can add his own implementation to report the HAL error return state */
 	uprintf("ERROR in file %s in line %i\n", file, line);
 	uprintf("Stopping execution. Please reset.\n");
 	while(1)
@@ -288,7 +363,7 @@ void _Error_Handler(char * file, int line)
 void assert_failed(uint8_t* file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
+	/* User can add his own implementation to report the file name and line number,
     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 
