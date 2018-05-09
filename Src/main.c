@@ -61,7 +61,7 @@
 //values for puttyinterface.h
 uint8_t rec_buf[8];
 char small_buf;
-volatile bool huart2_Rx_flag = false;
+volatile bool huart3_Rx_flag = false;
 
 uint8_t localRobotID;
 
@@ -138,6 +138,8 @@ int main(void)
 	while(initRobo(&hspi2, RADIO_CHANNEL, localRobotID) != 0) {
 		uprintf("Error while initializing nRF wireless module. Check connections.\n");
 	}
+	uprintf("nRF wireless module successfully initialized.\n");
+	uprintf("Status Register: %02x.\n", readReg(STATUS));
 
   /* USER CODE END 2 */
 
@@ -147,7 +149,7 @@ int main(void)
 	uprintf(startmessage);
 	uprintf("Build: %s %s\n", __DATE__, __TIME__);
 
-	HAL_UART_Receive_IT(&huart3, rec_buf, 1); //This is needed for debugging input/output on serial
+	HAL_UART_Receive_IT(&huart3, rec_buf, 100); //This is needed for debugging input/output on serial
 
 	//int tick = 0;
 	//HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
@@ -161,12 +163,12 @@ int main(void)
 	while (1)
 	{
 		//HAL_Delay(10); //10ms delay
-		if(huart2_Rx_flag){
+		if(huart3_Rx_flag){
 			//handle debug input/output over UART (connect an ST-Link to it for easy debugging over USB)
-			huart2_Rx_flag = false;
+			huart3_Rx_flag = false;
 			//HAL_GPIO_TogglePin(LED1_GPIO_Port, LED3_Pin);
-			HandlePcInput(&small_buf, 1, HandleCommand);
-			HAL_UART_Receive_IT(&huart3, rec_buf, 1);
+			HandlePcInput(&small_buf, 100, HandleCommand);
+			HAL_UART_Receive_IT(&huart3, rec_buf, 100);
 			//HAL_GPIO_TogglePin(LED1_GPIO_Port, LED3_Pin);
 		}
 
@@ -330,10 +332,10 @@ void HandleCommand(char * input){
 		uprintf("(this list may be incomplete)\n");
 	}
 }
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){ 	//So please call me, baby; Wherever you are..
 	//HAL_GPIO_TogglePin(LED1_GPIO_Port, LED4_Pin);
 	if(huart->Instance == huart3.Instance){
-		huart2_Rx_flag = true;
+		huart3_Rx_flag = true;
 		small_buf = *(huart->pRxBuffPtr-1);
 	}
 }
@@ -342,7 +344,7 @@ int ReadAddress(){
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-	//uprintf("\n\nInterrupt fired.\n");
+	uprintf("\n\nInterrupt fired.\n");
 
 	int8_t error_code = roboCallback(localRobotID);
 	if(error_code) {
