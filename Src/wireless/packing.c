@@ -7,7 +7,7 @@
 
 #include "packing.h"
 #include <stdio.h>
-#include "PuttyInterface/PuttyInterface.h" //should be removed after debugging
+#include "../PuttyInterface/PuttyInterface.h" //should be removed after debugging
 
 void printRoboData(roboData *input, uint8_t dataArray[ROBOPKTLEN]) {
 	uprintf("--------------------------------------------FROM BASESTATION------------------------------------------------\n");
@@ -45,8 +45,7 @@ void printRoboAckData(roboAckData *input, uint8_t dataArray[32], uint8_t ackData
 	uprintf("Orientation: %i \n", input->orientation);
 	uprintf("Angular velocity: %i \n", input->angularVelocity);
 	uprintf("Ball sensor: %i \n", input->ballSensor);
-	uprintf("ACCEL \t| x: %i \t y: %i \t\n", input->xAcceleration, input->yAcceleration);
-	uprintf("Angular rate\n", input->angularRate);
+	uprintf("ACCEL \t| x: %lu \t y: %lu \t angular: %lu\n", input->xAcceleration, input->yAcceleration, input->angularRate);
 }
 
 /*

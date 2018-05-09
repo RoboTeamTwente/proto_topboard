@@ -9,8 +9,8 @@
  *   with our robot.
  */
 
-#include <roboNRF24.h>
-#include "PuttyInterface/PuttyInterface.h" //should be removed after debugging
+#include "roboNRF24.h"
+#include "../PuttyInterface/PuttyInterface.h" //should be removed after debugging
 
 uint8_t counter = 0;
 

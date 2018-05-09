@@ -46,8 +46,8 @@
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
 #include "PuttyInterface/PuttyInterface.h"
-#include "myNRF24.h"
-#include "roboNRF24.h"
+#include "wireless/myNRF24.h"
+#include "wireless/roboNRF24.h"
 
 /* USER CODE END Includes */
 
