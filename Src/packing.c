@@ -9,8 +9,13 @@
 #include <stdio.h>
 #include "PuttyInterface/PuttyInterface.h" //should be removed after debugging
 
-void printRoboData(roboData *input) {
-	uprintf("--------------------------------------------------------------------------------------------\n");
+void printRoboData(roboData *input, uint8_t dataArray[ROBOPKTLEN]) {
+	uprintf("--------------------------------------------FROM BASESTATION------------------------------------------------\n");
+	for(int i=0; i<ROBOPKTLEN; i++) {
+		uprintf("%02x ", dataArray[i]);
+	}
+	uprintf("\n");
+
 	uprintf("RoboID: %i \n", input->id);
 	uprintf("Debug info: %i \n", input->debug_info);
 	uprintf("Rho: %i \t | Theta: %i \n", input->rho, input->theta);
@@ -22,8 +27,14 @@ void printRoboData(roboData *input) {
 	uprintf("CAMERA \t| use cam info: %i \t| position x: %i \t| position y: %i \t| rotation: %i \n", input->use_cam_info, input->cam_position_x, input->cam_position_y, input->cam_rotation);
 }
 
-void printRoboAckData(roboAckData *input) {
-	uprintf("--------------------------------------------------------------------------------------------\n");
+void printRoboAckData(roboAckData *input, uint8_t dataArray[32], uint8_t ackDataLength) {
+	uprintf("---------------------------------------------TO BASESTATION-----------------------------------------------\n");
+
+	//print ack packet in hex
+	for(int i=0; i<ackDataLength; i++) {
+		uprintf("%02x ", dataArray[i]);
+	}
+	uprintf("\n");
 
 	uprintf("RoboID: %i \n", input->roboID);
 	uprintf("WHEELS \t| leftFront: %i \t| rightFront: %i \t| leftBack: %i \t| rightBack: %i \t| \n", input->wheelLeftFront, input->wheelRightFront, input->wheelLeftBack, input->wheelRightBack);

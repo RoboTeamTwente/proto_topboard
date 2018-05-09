@@ -15,11 +15,7 @@
 uint8_t counter = 0;
 
 int8_t initRobo(SPI_HandleTypeDef* spiHandle, uint8_t freqChannel, uint8_t roboID){
-	/*
-	 * TODO
-	 * I need to review all those settings and need to check
-	 * if this is acutally compatible with what I configured the basestation with.
-	 */
+
 	//reset and flush buffer
 	if(NRFinit(spiHandle, nrf24nssHigh, nrf24nssLow, nrf24ceHigh, nrf24ceLow, nrf24irqRead ) != 0) {
 		return -1; //error
@@ -154,6 +150,7 @@ int8_t roboCallback(uint8_t localRobotID){
 	}
 	//putting the new data from the packet on the struct
 	packetToRoboData(dataArray+3, &receivedRoboData);
+	printRoboData(&receivedRoboData,dataArray+3);
 	//if(verbose) uprintf("Clearing RX_DR interrupt.\n");
 	nrf24ceHigh();
 
@@ -190,7 +187,7 @@ int8_t roboCallback(uint8_t localRobotID){
 
 	fillAckData(ackDataLength);
 	roboAckDataToPacket(&preparedAckData, txPacket);
-
+	printRoboAckData(&preparedAckData,txPacket,ackDataLength);
 
 	//robotDataToPacket(&receivedRoboData, txPacket); //sending back the packet we just received
 
@@ -202,6 +199,10 @@ int8_t roboCallback(uint8_t localRobotID){
 	return 0; //success
 }
 
+/*
+	 * TODO
+	 * Fill Ack with actual data instead of dummy stuff
+*/
 void fillAckData(uint8_t ackDataLength) {
 
 	preparedAckData.roboID = 5;
