@@ -6,7 +6,17 @@
  */
 
 #include "PuttyInterface.h"
-#include "stm32f3xx_hal.h"
+
+#if __has_include("stm32f0xx_hal.h")
+#  include "stm32f0xx_hal.h"
+#elif  __has_include("stm32f1xx_hal.h")
+#  include "stm32f1xx_hal.h"
+#elif  __has_include("stm32f3xx_hal.h")
+#  include "stm32f3xx_hal.h"
+#elif  __has_include("stm32f4xx_hal.h")
+#  include "stm32f4xx_hal.h"
+#endif
+
 #include <string.h>
 #include <stdio.h>
 

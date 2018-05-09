@@ -14,6 +14,6 @@
     <name>Top_board_proto</name>
     <dbgIF>SWD</dbgIF>
     <dbgDEV>ST-Link</dbgDEV>
-    <mcuId>stm32f301r8tx</mcuId>
+    <mcuId>stm32f417vgtx</mcuId>
   </board>
 </targetDefinitions>

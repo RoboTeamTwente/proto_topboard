@@ -242,12 +242,12 @@ void fillAckData(uint8_t ackDataLength) {
 //put the nss pin corresponding to the SPI used high
 void nrf24nssHigh(){
 	//NSS / CSN : chip select
-	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(SPI2_CS_GPIO_Port, SPI2_CS_Pin, GPIO_PIN_SET);
 }
 
 //put the nss pin corresponding to the SPI used low
 void nrf24nssLow(){
-	HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(SPI2_CS_GPIO_Port, SPI2_CS_Pin, GPIO_PIN_RESET);
 }
 
 //put the ce pin corresponding to the SPI used high

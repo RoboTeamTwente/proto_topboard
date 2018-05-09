@@ -1,7 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : main.h
-  * Description        : This file contains the common defines of the application
+  * @file           : main.h
+  * @brief          : Header for main.c file.
+  *                   This file contains the common defines of the application.
   ******************************************************************************
   ** This notice applies to any and all portions of this file
   * that are not between comment pairs USER CODE BEGIN and
@@ -35,56 +36,142 @@
   *
   ******************************************************************************
   */
+
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __MAIN_H
-#define __MAIN_H
-  /* Includes ------------------------------------------------------------------*/
+#ifndef __MAIN_H__
+#define __MAIN_H__
+
+/* Includes ------------------------------------------------------------------*/
+#include "stm32f4xx_hal.h"
 
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
 
 /* Private define ------------------------------------------------------------*/
+#define MAX_PWM 2400
 
-#define JD0_Pin GPIO_PIN_0
-#define JD0_GPIO_Port GPIOC
-#define JD1_Pin GPIO_PIN_1
-#define JD1_GPIO_Port GPIOC
-#define JD2_Pin GPIO_PIN_2
-#define JD2_GPIO_Port GPIOC
-#define JD3_Pin GPIO_PIN_3
-#define JD3_GPIO_Port GPIOC
-#define SPI2_NSS_Pin GPIO_PIN_12
-#define SPI2_NSS_GPIO_Port GPIOB
-#define LED1_Pin GPIO_PIN_6
-#define LED1_GPIO_Port GPIOC
-#define LED2_Pin GPIO_PIN_7
-#define LED2_GPIO_Port GPIOC
-#define LED3_Pin GPIO_PIN_8
-#define LED3_GPIO_Port GPIOC
-#define LED4_Pin GPIO_PIN_9
-#define LED4_GPIO_Port GPIOC
-#define USB_UART_TX_Pin GPIO_PIN_6
-#define USB_UART_TX_GPIO_Port GPIOB
-#define USB_UART_RX_Pin GPIO_PIN_7
-#define USB_UART_RX_GPIO_Port GPIOB
+#define FR_RB_Pin GPIO_PIN_4
+#define FR_RB_GPIO_Port GPIOE
+#define PWM_RB_Pin GPIO_PIN_5
+#define PWM_RB_GPIO_Port GPIOE
+#define PWM_RF_Pin GPIO_PIN_6
+#define PWM_RF_GPIO_Port GPIOE
+#define FR_RF_Pin GPIO_PIN_13
+#define FR_RF_GPIO_Port GPIOC
+#define wireless_EXTI0_Pin GPIO_PIN_0
+#define wireless_EXTI0_GPIO_Port GPIOC
+#define wireless_EXTI0_EXTI_IRQn EXTI0_IRQn
+#define XSENS_nRST_Pin GPIO_PIN_4
+#define XSENS_nRST_GPIO_Port GPIOA
+#define CHB_LB_Pin GPIO_PIN_6
+#define CHB_LB_GPIO_Port GPIOA
+#define CHA_LB_Pin GPIO_PIN_7
+#define CHA_LB_GPIO_Port GPIOA
+#define Charge_done_Pin GPIO_PIN_4
+#define Charge_done_GPIO_Port GPIOC
+#define Charge_Pin GPIO_PIN_5
+#define Charge_GPIO_Port GPIOC
+#define Chip_Pin GPIO_PIN_0
+#define Chip_GPIO_Port GPIOB
+#define Kick_Pin GPIO_PIN_1
+#define Kick_GPIO_Port GPIOB
+#define LD6_Pin GPIO_PIN_2
+#define LD6_GPIO_Port GPIOB
+#define LD5_Pin GPIO_PIN_7
+#define LD5_GPIO_Port GPIOE
+#define LD4_Pin GPIO_PIN_8
+#define LD4_GPIO_Port GPIOE
+#define LD3_Pin GPIO_PIN_9
+#define LD3_GPIO_Port GPIOE
+#define LD2_Pin GPIO_PIN_10
+#define LD2_GPIO_Port GPIOE
+#define LD1_Pin GPIO_PIN_11
+#define LD1_GPIO_Port GPIOE
+#define ID3_Pin GPIO_PIN_12
+#define ID3_GPIO_Port GPIOE
+#define ID2_Pin GPIO_PIN_13
+#define ID2_GPIO_Port GPIOE
+#define ID1_Pin GPIO_PIN_14
+#define ID1_GPIO_Port GPIOE
+#define ID0_Pin GPIO_PIN_15
+#define ID0_GPIO_Port GPIOE
+#define SPI1_IRQ_Pin GPIO_PIN_11
+#define SPI1_IRQ_GPIO_Port GPIOB
+#define SPI1_IRQ_EXTI_IRQn EXTI15_10_IRQn
+#define SPI2_CS_Pin GPIO_PIN_12
+#define SPI2_CS_GPIO_Port GPIOB
+#define FR_LB_Pin GPIO_PIN_13
+#define FR_LB_GPIO_Port GPIOB
+#define PWM_LB_Pin GPIO_PIN_14
+#define PWM_LB_GPIO_Port GPIOB
+#define PWM_LF_Pin GPIO_PIN_15
+#define PWM_LF_GPIO_Port GPIOB
+#define FR_LF_Pin GPIO_PIN_8
+#define FR_LF_GPIO_Port GPIOD
+#define CHA_LF_Pin GPIO_PIN_12
+#define CHA_LF_GPIO_Port GPIOD
+#define CHB_LF_Pin GPIO_PIN_13
+#define CHB_LF_GPIO_Port GPIOD
+#define CHA_RF_Pin GPIO_PIN_6
+#define CHA_RF_GPIO_Port GPIOC
+#define CHB_RF_Pin GPIO_PIN_7
+#define CHB_RF_GPIO_Port GPIOC
+#define CHA_RB_Pin GPIO_PIN_8
+#define CHA_RB_GPIO_Port GPIOA
+#define CHB_RB_Pin GPIO_PIN_9
+#define CHB_RB_GPIO_Port GPIOA
+#define Geneva_CHA_Pin GPIO_PIN_15
+#define Geneva_CHA_GPIO_Port GPIOA
+#define PC_RX_Pin GPIO_PIN_10
+#define PC_RX_GPIO_Port GPIOC
+#define PC_RXC11_Pin GPIO_PIN_11
+#define PC_RXC11_GPIO_Port GPIOC
+#define Switch_Pin GPIO_PIN_0
+#define Switch_GPIO_Port GPIOD
+#define empty_battery_Pin GPIO_PIN_4
+#define empty_battery_GPIO_Port GPIOD
+#define Geneva_cal_sens_Pin GPIO_PIN_5
+#define Geneva_cal_sens_GPIO_Port GPIOD
+#define Geneva_cal_sens_EXTI_IRQn EXTI9_5_IRQn
+#define Geneva_dir_A_Pin GPIO_PIN_6
+#define Geneva_dir_A_GPIO_Port GPIOD
+#define Geneva_dir_B_Pin GPIO_PIN_7
+#define Geneva_dir_B_GPIO_Port GPIOD
+#define Geneva_CHB_Pin GPIO_PIN_3
+#define Geneva_CHB_GPIO_Port GPIOB
+#define bs_EXTI_Pin GPIO_PIN_4
+#define bs_EXTI_GPIO_Port GPIOB
+#define bs_EXTI_EXTI_IRQn EXTI4_IRQn
+#define bs_nRST_Pin GPIO_PIN_5
+#define bs_nRST_GPIO_Port GPIOB
+#define Geneva_PWM_Pin GPIO_PIN_8
+#define Geneva_PWM_GPIO_Port GPIOB
+#define PWM_Dribbler_Pin GPIO_PIN_9
+#define PWM_Dribbler_GPIO_Port GPIOB
+
+/* ########################## Assert Selection ############################## */
+/**
+  * @brief Uncomment the line below to expanse the "assert_param" macro in the 
+  *        HAL drivers code
+  */
+/* #define USE_FULL_ASSERT    1U */
 
 /* USER CODE BEGIN Private defines */
 
 
 /* USER CODE END Private defines */
 
+#ifdef __cplusplus
+ extern "C" {
+#endif
 void _Error_Handler(char *, int);
 
 #define Error_Handler() _Error_Handler(__FILE__, __LINE__)
+#ifdef __cplusplus
+}
+#endif
 
-/**
-  * @}
-  */ 
+#endif /* __MAIN_H__ */
 
-/**
-  * @}
-*/ 
-
-#endif /* __MAIN_H */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

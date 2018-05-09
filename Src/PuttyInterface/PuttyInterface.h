@@ -25,9 +25,7 @@
 	TextOut(smallStrBuffer); }
 
 #ifdef PUTTY_USART
-#define huartx huart1
-#else
-
+#define huartx huart3
 #endif /* PUTTY_USART */
 
 // function that will be called when HandlePcInput is done.
