@@ -12,12 +12,9 @@
 #ifndef ROBONRF24_H_
 #define ROBONRF24_H_
 
-#define ROBOPKTLEN 13 //amount of bytes for a packet sent to the robot
-#define SHORTACKPKTLEN 11 //amount of bytes of an ACK packet sent by the robot without using the extra/debug fields
-#define FULLACKPKTLEN 23 //ACK packet with debug fields
-
-#include "myNRF24.h"
 #include "packing.h"
+#include "myNRF24.h"
+
 
 //structs to be used in combination with TX and RX packets
 roboData receivedRoboData; //unwrapped packet from the basestation
