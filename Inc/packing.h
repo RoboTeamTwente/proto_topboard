@@ -67,6 +67,9 @@ typedef struct roboAckData{
 } roboAckData;
 
 
+void printRoboData(roboData *input);
+void printRoboAckData(roboData *input);
+
 void robotDataToPacket(roboData *input, uint8_t output[ROBOPKTLEN]);
 void packetToRoboData(uint8_t input[ROBOPKTLEN], roboData *output);
 void roboAckDataToPacket(roboAckData *input, uint8_t output[FULLACKPKTLEN]);

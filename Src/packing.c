@@ -7,6 +7,36 @@
 
 #include "packing.h"
 #include <stdio.h>
+#include "PuttyInterface/PuttyInterface.h" //should be removed after debugging
+
+void printRoboData(roboData *input) {
+	uprintf("--------------------------------------------------------------------------------------------\n");
+	uprintf("RoboID: %i \n", input->id);
+	uprintf("Debug info: %i \n", input->debug_info);
+	uprintf("Rho: %i \t | Theta: %i \n", input->rho, input->theta);
+	uprintf("Kick %i \t | Chip: %i \t | Forced: %i \t | Power: %i \n", input->do_kick, input->do_chip ,input->kick_chip_power, input->kick_chip_power);
+	uprintf("Dribbler velocity: %i \n", input->velocity_dribbler);
+	uprintf("Geneva drive: %i \n", input->geneva_drive_state);
+	uprintf("Driving reference: %i \n", input->driving_reference);
+	uprintf("Angular velocity: %i \n", input->velocity_angular);
+	uprintf("CAMERA \t| use cam info: %i \t| position x: %i \t| position y: %i \t| rotation: %i \n", input->use_cam_info, input->cam_position_x, input->cam_position_y, input->cam_rotation);
+}
+
+void printRoboAckData(roboAckData *input) {
+	uprintf("--------------------------------------------------------------------------------------------\n");
+
+	uprintf("RoboID: %i \n", input->roboID);
+	uprintf("WHEELS \t| leftFront: %i \t| rightFront: %i \t| leftBack: %i \t| rightBack: %i \t| \n", input->wheelLeftFront, input->wheelRightFront, input->wheelLeftBack, input->wheelRightBack);
+	uprintf("Geneva drive: %i \n", input->genevaDriveState);
+	uprintf("Battery drive: %i \n", input->batteryState);
+	uprintf("POSITION \t| x: %i \t y: %i \t\n", input->xPosRobot, input->yPosRobot);
+	uprintf("Rho: %i \t| Theta: %i \n", input->rho, input->theta);
+	uprintf("Orientation: %i \n", input->orientation);
+	uprintf("Angular velocity: %i \n", input->angularVelocity);
+	uprintf("Ball sensor: %i \n", input->ballSensor);
+	uprintf("ACCEL \t| x: %i \t y: %i \t\n", input->xAcceleration, input->yAcceleration);
+	uprintf("Angular rate\n", input->angularRate);
+}
 
 /*
  * Convert a struct with roboData to a Bytearray, which can be transmitted by the nRF module.
