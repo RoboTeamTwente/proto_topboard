@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project>
-<ProjectName>/home/ulf/git/RoboTeam/proto_topboard/\Top_board_proto</ProjectName>
+<ProjectName>C:\Users\Gebruiker\Documents\werk\Roboteam\Communication\proto_topboard\\Top_board_proto</ProjectName>
 <ProjectNature>C</ProjectNature> 
 <CMSIS>../Drivers/CMSIS</CMSIS>
 <HAL_Driver>/home/ulf/STM32Cube/Repository//STM32Cube_FW_F4_V1.21.0/Drivers/CMSIS</HAL_Driver>

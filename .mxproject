@@ -1,7 +1,7 @@
 [PreviousGenFiles]
-HeaderPath=/home/ulf/git/RoboTeam/proto_topboard/Inc
+HeaderPath=C:/Users/Gebruiker/Documents/werk/Roboteam/Communication/proto_topboard/Inc
 HeaderFiles=gpio.h;i2c.h;spi.h;tim.h;usart.h;stm32f4xx_it.h;stm32f4xx_hal_conf.h;main.h;
-SourcePath=/home/ulf/git/RoboTeam/proto_topboard/Src
+SourcePath=C:/Users/Gebruiker/Documents/werk/Roboteam/Communication/proto_topboard/Src
 SourceFiles=gpio.c;i2c.c;spi.c;tim.c;usart.c;stm32f4xx_it.c;stm32f4xx_hal_msp.c;main.c;
 
 [PreviousLibFiles]
