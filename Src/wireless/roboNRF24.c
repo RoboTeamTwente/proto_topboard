@@ -90,6 +90,8 @@ int8_t roboCallback(uint8_t localRobotID){
 	uint8_t dataArray[32];
 	uint8_t verbose = 1;
 
+	uint8_t misalignOffset = 0; //sometimes we need to hack our way trough the received bytes. Sometimes we receive 3 Bytes of bullshit before the actual data.
+
 	//clear RX interrupt
 	writeReg(STATUS, RX_DR);
 
@@ -123,34 +125,47 @@ int8_t roboCallback(uint8_t localRobotID){
 	 * For some reason the payload is always off by 3 bytes.. so we need to apply a hack here
 	 * Also, the status register isn't read properly. So, we need to assume a static payload length..
 	 */
-	readData(dataArray, ROBOPKTLEN+4); //+3 for misalignment +1 for cheksum byte.
+	readData(dataArray, ROBOPKTLEN+misalignOffset+1); //+3 for misalignment +1 for cheksum byte.
 
 
+	if(verbose) {
+		uprintf("Raw packet data in DEC: ");
+		for(int i=0; i<32; i++) {
+			uprintf("%i ", dataArray[i]);
+		}
+		uprintf("\n");
+
+		uprintf("Raw packet data in HEX: ");
+		for(int i=0; i<32; i++) {
+			uprintf("%02x ", dataArray[i]);
+		}
+		uprintf("\n");
+	}
 
 	//calculate the checksum for what I received
 	uint8_t calculated_checksum = 0;
 
 	//start at 3 for the misaligment
-	for(uint8_t i=3; i<(ROBOPKTLEN+3); i++) {
+	for(uint8_t i=misalignOffset; i<(ROBOPKTLEN+misalignOffset); i++) {
 		calculated_checksum ^= dataArray[i];
 	}
 
-	uint8_t received_checksum = dataArray[ROBOPKTLEN+3];
+	uint8_t received_checksum = dataArray[ROBOPKTLEN+misalignOffset];
 	//compare the calculated checksum with the received checksum
 	if(calculated_checksum != received_checksum) {
 		//checksums don't match.
 		return -4;
 	}
 
-	uint8_t receivedRobotID = (dataArray+3)[0]>>3; //see packet format
+	uint8_t receivedRobotID = (dataArray+misalignOffset)[0]>>3; //see packet format
 
 	if(receivedRobotID != localRobotID) {
 		if(verbose) uprintf("Received RobotID was wrong. Rx'd: %i (0x%02x)\n", receivedRobotID, receivedRobotID);
 		return -3; //packet wasn't for me (or, more likely: we did not receive any packet and read bullshit from the buffer)
 	}
 	//putting the new data from the packet on the struct
-	packetToRoboData(dataArray+3, &receivedRoboData);
-	printRoboData(&receivedRoboData,dataArray+3);
+	packetToRoboData(dataArray+misalignOffset, &receivedRoboData);
+	printRoboData(&receivedRoboData,dataArray+misalignOffset);
 	//if(verbose) uprintf("Clearing RX_DR interrupt.\n");
 	nrf24ceHigh();
 

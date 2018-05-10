@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project>
-<ProjectName>C:\Users\Gebruiker\Documents\werk\Roboteam\Communication\proto_topboard\\Top_board_proto</ProjectName>
+<ProjectName>/home/ulf/git/RoboTeam/proto_topboard/\Top_board_proto</ProjectName>
 <ProjectNature>C</ProjectNature> 
 <CMSIS>../Drivers/CMSIS</CMSIS>
 <HAL_Driver>/home/ulf/STM32Cube/Repository//STM32Cube_FW_F4_V1.21.0/Drivers/CMSIS</HAL_Driver>
@@ -9,15 +9,6 @@
 
 <filestoremove>
     <file>
-    <name>..\Src\main.c</name>
-    <name>..\Src\gpio.c</name>
-    <name>..\Src\i2c.c</name>
-    <name>..\Src\spi.c</name>
-    <name>..\Src\tim.c</name>
-    <name>..\Src\usart.c</name>
-    <name>..\Src\stm32f4xx_it.c</name>
-    <name>..\Src\stm32f4xx_hal_msp.c</name>
-    <name>../\Src/system_stm32f4xx.c</name>
     </file>
 </filestoremove>
 
@@ -26,11 +17,6 @@
 	   <include></include>
     </Aincludes>
 	<Cincludes>
-	   		<include>..\Drivers\STM32F4xx_HAL_Driver\Inc</include>
-	   		<include>..\Drivers\STM32F4xx_HAL_Driver\Inc\Legacy</include>
-	   		<include>..\Drivers\CMSIS\Device\ST\STM32F4xx\Include</include>
-	   		<include>..\Drivers\CMSIS\Include</include>
-	   		<include>..\Inc</include>
     </Cincludes>
 </inctoremove>
 
@@ -66,8 +52,6 @@
             <define></define>
         </Adefines>
         <Cdefines>
-            <define>__weak=__attribute__((weak))</define>
-            <define>__packed=__attribute__((__packed__))</define>
             <define>USE_FULL_LL_DRIVER</define>
             <define>MBEDTLS_CONFIG_FILE=&quot;mbedtls_config.h&quot;</define>
         </Cdefines>         

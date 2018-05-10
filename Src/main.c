@@ -355,12 +355,13 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	if(isNrfInitialized) {
 		uprintf("\n\nInterrupt fired.\n");
 
-		/*
+
 		int8_t error_code = roboCallback(localRobotID);
 		if(error_code) {
 			uprintf("RoboCallback failed with error: %i\n", error_code);
 		}
-		*/
+
+		//flushRX();
 		clearInterrupts(); //should not be needed
 	}
 }
