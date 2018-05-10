@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project>
-<ProjectName>C:\Users\Gebruiker\Documents\werk\Roboteam\Communication\proto_topboard2\\Top_board_proto</ProjectName>
+<ProjectName>C:\Users\Gebruiker\Documents\werk\Roboteam\Communication\proto_topboard\\Top_board_proto</ProjectName>
 <ProjectNature>C</ProjectNature> 
 <CMSIS>..\Drivers\CMSIS</CMSIS>
 <HAL_Driver>C:\Users\Gebruiker\STM32Cube\Repository\STM32Cube_FW_F4_V1.21.0\Drivers\CMSIS</HAL_Driver>
@@ -32,7 +32,7 @@
     <usedDebug>true</usedDebug>
     	<debugprobe>swd</debugprobe>
     <optimization>2</optimization>
-    <icfloc>1</icfloc>
+    <icfloc>0</icfloc>
     <Adefines>
         <define></define>
     </Adefines>   

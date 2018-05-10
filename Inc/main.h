@@ -59,9 +59,6 @@
 #define PWM_RF_GPIO_Port GPIOE
 #define FR_RF_Pin GPIO_PIN_13
 #define FR_RF_GPIO_Port GPIOC
-#define wireless_EXTI0_Pin GPIO_PIN_0
-#define wireless_EXTI0_GPIO_Port GPIOC
-#define wireless_EXTI0_EXTI_IRQn EXTI0_IRQn
 #define XSENS_nRST_Pin GPIO_PIN_4
 #define XSENS_nRST_GPIO_Port GPIOA
 #define CHB_LB_Pin GPIO_PIN_6
