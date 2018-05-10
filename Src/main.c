@@ -66,6 +66,7 @@ volatile bool huart3_Rx_flag = false;
 uint8_t localRobotID;
 
 uint8_t receptionNo =0; //debug
+uint8_t isNrfInitialized = 0;
 
 /* USER CODE END PV */
 
@@ -132,14 +133,19 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 	//setup code for using the nRF24 module
-	localRobotID = ReadAddress(); //usually that should be the RobotID
+	//localRobotID = ReadAddress(); //usually that should be the RobotID
+  	localRobotID = 10; //TODO: debug. remove later
 	nrf24nssHigh(); //I think we need that, but I can't really say, yet, why we would need to call low-level functions in main()
+
+
 
 	while(initRobo(&hspi2, RADIO_CHANNEL, localRobotID) != 0) {
 		uprintf("Error while initializing nRF wireless module. Check connections.\n");
 	}
+	isNrfInitialized = 1;
 	uprintf("nRF wireless module successfully initialized.\n");
 	uprintf("Status Register: %02x.\n", readReg(STATUS));
+
 
   /* USER CODE END 2 */
 
@@ -148,6 +154,8 @@ int main(void)
 	char * startmessage = "---------------------\n\r";
 	uprintf(startmessage);
 	uprintf("Build: %s %s\n", __DATE__, __TIME__);
+
+
 
 	HAL_UART_Receive_IT(&huart3, rec_buf, 100); //This is needed for debugging input/output on serial
 
@@ -344,16 +352,17 @@ int ReadAddress(){
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-	uprintf("\n\nInterrupt fired.\n");
+	if(isNrfInitialized) {
+		uprintf("\n\nInterrupt fired.\n");
 
-	int8_t error_code = roboCallback(localRobotID);
-	if(error_code) {
-		uprintf("RoboCallback failed with error: %i\n", error_code);
+		/*
+		int8_t error_code = roboCallback(localRobotID);
+		if(error_code) {
+			uprintf("RoboCallback failed with error: %i\n", error_code);
+		}
+		*/
+		clearInterrupts(); //should not be needed
 	}
-
-
-
-	clearInterrupts(); //should not be needed
 }
 
 /* USER CODE END 4 */
