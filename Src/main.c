@@ -134,7 +134,7 @@ int main(void)
 
 	//setup code for using the nRF24 module
 	//localRobotID = ReadAddress(); //usually that should be the RobotID
-  	localRobotID = 10; //TODO: debug. remove later
+  	localRobotID = 4; //TODO: debug. remove later
 	nrf24nssHigh(); //I think we need that, but I can't really say, yet, why we would need to call low-level functions in main()
 
 

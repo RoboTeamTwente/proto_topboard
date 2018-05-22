@@ -128,7 +128,7 @@ int8_t roboCallback(uint8_t localRobotID){
 	readData(dataArray, ROBOPKTLEN+misalignOffset+1); //+3 for misalignment +1 for cheksum byte.
 
 
-	if(verbose) {
+/*	if(verbose) {
 		uprintf("Raw packet data in DEC: ");
 		for(int i=0; i<32; i++) {
 			uprintf("%i ", dataArray[i]);
@@ -140,7 +140,7 @@ int8_t roboCallback(uint8_t localRobotID){
 			uprintf("%02x ", dataArray[i]);
 		}
 		uprintf("\n");
-	}
+	}*/
 
 	//calculate the checksum for what I received
 	uint8_t calculated_checksum = 0;
@@ -165,7 +165,7 @@ int8_t roboCallback(uint8_t localRobotID){
 	}
 	//putting the new data from the packet on the struct
 	packetToRoboData(dataArray+misalignOffset, &receivedRoboData);
-	printRoboData(&receivedRoboData,dataArray+misalignOffset);
+	printRoboData(&receivedRoboData,dataArray+misalignOffset,0);
 	//if(verbose) uprintf("Clearing RX_DR interrupt.\n");
 	nrf24ceHigh();
 
@@ -202,7 +202,7 @@ int8_t roboCallback(uint8_t localRobotID){
 
 	fillAckData(ackDataLength);
 	roboAckDataToPacket(&preparedAckData, txPacket);
-	printRoboAckData(&preparedAckData,txPacket,ackDataLength);
+	printRoboAckData(&preparedAckData,txPacket,ackDataLength,0);
 
 	//robotDataToPacket(&receivedRoboData, txPacket); //sending back the packet we just received
 

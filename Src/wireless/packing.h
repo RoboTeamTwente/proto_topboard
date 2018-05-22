@@ -22,23 +22,24 @@
  * transmitted, though.
  */
 
+									//Description                 Units             Values        Represented values    Bits
 typedef struct roboData{
-   uint8_t id:5;
-   int16_t rho:11;
-   int16_t theta:11;
-   uint8_t driving_reference:1;
-   uint8_t use_cam_info:1;
-   int16_t velocity_angular:9;
-   uint8_t debug_info:1;
-   uint8_t do_kick:1;
-   uint8_t do_chip:1;
-   uint8_t kick_chip_forced:1;
-   uint8_t kick_chip_power:8;
-   uint8_t velocity_dribbler:8;
-   uint8_t geneva_drive_state:3;
-   uint16_t cam_position_x:13;
-   uint16_t cam_position_y:13;
-   uint16_t cam_rotation:11;
+   uint8_t id:5;					//Robot ID                    [0, 15]           -             [0, 15]                  4
+   int16_t rho:11;					//Velocity length             [0, 2047]         0.008m/s      [0, 8.191]              11
+   int16_t theta:11;				//Velocity angle              [-1024, 1023]     0.00307rad    [-pi, pi>               11
+   uint8_t driving_reference:1;		//Driving reference           [0, 1]            -             {true, false}            1
+   uint8_t use_cam_info:1;			//Use camera information      [0, 1]            -             {true, false}            1
+   int16_t velocity_angular:9;		//Reference angular velocity  [-512, 511]       0.098rad/s    [-8*2pi, 8*2pi]          9
+   uint8_t debug_info:1;			//Debug information           [0, 1]            -             {true, false}            1
+   uint8_t do_kick:1;				//Kick                        [0, 1]            -             {true, false}            1
+   uint8_t do_chip:1;				//Chip                        [0, 1]            -             {true, false}            1
+   uint8_t kick_chip_forced:1;		//Kick/chip immediately       [0, 1]            -             {true, false}            1
+   uint8_t kick_chip_power:8;		//Kick/chip power             [0, 255]          0.39%         [0, 100]%                8
+   uint8_t velocity_dribbler:8;		//Reference dribbler speed    [0, 255]          0.39%         [0, 100]%                8
+   uint8_t geneva_drive_state:3;	//Geneva drive state          [0, 7]            -             [-2, 2]                  3
+   uint16_t cam_position_x:13;		//x position robot (camera)   [-4096, 4095]     0.0025m       [-10.24, 10.23]         13
+   uint16_t cam_position_y:13;		//y position robot (camera)   [-4096, 4095]     0.0025m       [-10.24, 10.23]         13
+   uint16_t cam_rotation:11;		//Orientation (camera)        [-1024, 1023]     0.00307rad    [-pi, pi>               11
 } roboData;
 
 //between 11 and 23 Bytes, ideally
@@ -68,14 +69,14 @@ typedef struct roboAckData{
 
 
 //for debugging
-void printRoboData(roboData *input, uint8_t dataArray[ROBOPKTLEN]);
-void printRoboAckData(roboAckData *input, uint8_t dataArray[32], uint8_t ackDataLength);
+float uint32tofloat(uint32_t raw);
+void printRoboData(roboData *input, uint8_t dataArray[ROBOPKTLEN], uint8_t verbose);
+void printRoboAckData(roboAckData *input, uint8_t dataArray[32], uint8_t ackDataLength, uint8_t verbose);
 
 void robotDataToPacket(roboData *input, uint8_t output[ROBOPKTLEN]);
 void packetToRoboData(uint8_t input[ROBOPKTLEN], roboData *output);
 void roboAckDataToPacket(roboAckData *input, uint8_t output[FULLACKPKTLEN]);
 void ackPacketToRoboAckData(uint8_t input[FULLACKPKTLEN], uint8_t packetlength, roboAckData *output);
-
 
 #endif /* PACKING_H_ */
 
